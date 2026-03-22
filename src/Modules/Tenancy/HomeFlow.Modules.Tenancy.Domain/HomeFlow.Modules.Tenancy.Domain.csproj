@@ -5,6 +5,10 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.MultiTenancy\HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Ids\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

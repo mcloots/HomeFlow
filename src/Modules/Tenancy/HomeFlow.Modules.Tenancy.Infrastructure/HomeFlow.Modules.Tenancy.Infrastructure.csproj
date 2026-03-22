@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HomeFlow.Modules.Tenancy.Domain\HomeFlow.Modules.Tenancy.Domain.csproj" />
     <ProjectReference Include="..\HomeFlow.Modules.Tenancy.Application\HomeFlow.Modules.Tenancy.Application.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Infrastructure\HomeFlow.BuildingBlocks.Infrastructure.csproj" />

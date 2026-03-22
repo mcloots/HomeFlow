@@ -1,6 +1,6 @@
 using HomeFlow.Modules.Households.Infrastructure.DependencyInjection;
-using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
-using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
+//using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
+//using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Tenancy.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,9 +14,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 builder.Services
-    .AddIdentityModule()
+    //.AddIdentityModule()
     .AddTenancyModule()
-    .AddSubscriptionsModule()
+    //.AddSubscriptionsModule()
     .AddHouseholdsModule();
 
 var app = builder.Build();
