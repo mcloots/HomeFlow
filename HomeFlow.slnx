@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Api/">
+    <Project Path="src/Api/HomeFlow.Api/HomeFlow.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Application/HomeFlow.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Domain/HomeFlow.BuildingBlocks.Domain.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Infrastructure/HomeFlow.BuildingBlocks.Infrastructure.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.MultiTenancy/HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Households/">
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Application/HomeFlow.Modules.Households.Application.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Contracts/HomeFlow.Modules.Households.Contracts.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Domain/HomeFlow.Modules.Households.Domain.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Infrastructure/HomeFlow.Modules.Households.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Application/HomeFlow.Modules.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Contracts/HomeFlow.Modules.Identity.Contracts.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Domain/HomeFlow.Modules.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Infrastructure/HomeFlow.Modules.Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Subscriptions/">
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Application/HomeFlow.Modules.Subscriptions.Application.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Contracts/HomeFlow.Modules.Subscriptions.Contracts.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Domain/HomeFlow.Modules.Subscriptions.Domain.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Infrastructure/HomeFlow.Modules.Subscriptions.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Tenancy/">
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Application/HomeFlow.Modules.Tenancy.Application.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Contracts/HomeFlow.Modules.Tenancy.Contracts.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Domain/HomeFlow.Modules.Tenancy.Domain.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Infrastructure/HomeFlow.Modules.Tenancy.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HomeFlow.ArchitectureTests/HomeFlow.ArchitectureTests.csproj" />
+    <Project Path="tests/HomeFlow.UnitTests/HomeFlow.UnitTests.csproj" />
+  </Folder>
+</Solution>
