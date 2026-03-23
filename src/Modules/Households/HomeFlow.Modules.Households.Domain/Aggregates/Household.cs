@@ -9,6 +9,8 @@ namespace HomeFlow.Modules.Households.Domain.Aggregates;
 
 public sealed class Household : AggregateRoot<HouseholdId>, ITenantOwned
 {
+    private readonly List<HouseholdMember> _members = [];
+
     private Household()
     {
     }
@@ -16,6 +18,7 @@ public sealed class Household : AggregateRoot<HouseholdId>, ITenantOwned
     public TenantId TenantId { get; private set; }
     public string Name { get; private set; } = default!;
     public HouseholdStatus Status { get; private set; }
+    public IReadOnlyCollection<HouseholdMember> Members => _members.AsReadOnly();
 
     public static Household Create(HouseholdId id, TenantId tenantId, string name)
     {
@@ -32,6 +35,19 @@ public sealed class Household : AggregateRoot<HouseholdId>, ITenantOwned
             Name = name.Trim(),
             Status = HouseholdStatus.Active
         };
+    }
+
+    public HouseholdMember AddOwnerMember(HouseholdMemberId memberId, string displayName, string email)
+    {
+        EnsureActive();
+
+        if (_members.Any(m => string.Equals(m.Email, email.Trim(), StringComparison.OrdinalIgnoreCase)))
+            throw new DomainException("A member with this email already exists in the household.");
+
+        var member = HouseholdMember.CreateOwner(memberId, displayName, email);
+        _members.Add(member);
+
+        return member;
     }
 
     public void Rename(string name)

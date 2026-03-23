@@ -2,4 +2,6 @@
 
 public sealed record CreateTenantAndHouseholdRequest(
     string TenantName,
-    string HouseholdName);
+    string HouseholdName,
+    string OwnerDisplayName,
+    string OwnerEmail);

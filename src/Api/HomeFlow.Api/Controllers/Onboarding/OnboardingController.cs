@@ -23,7 +23,9 @@ public sealed class OnboardingController : ControllerBase
     {
         var command = new CreateTenantAndHouseholdCommand(
             request.TenantName,
-            request.HouseholdName);
+            request.HouseholdName,
+            request.OwnerDisplayName,
+            request.OwnerEmail);
 
         var response = await _handler.Handle(command, cancellationToken);
 

@@ -30,9 +30,15 @@ public sealed class CreateTenantAndHouseholdHandler
     {
         var tenantId = TenantId.New();
         var householdId = HouseholdId.New();
+        var ownerMemberId = HouseholdMemberId.New();
 
         var tenant = Tenant.Create(tenantId, command.TenantName);
         var household = Household.Create(householdId, tenantId, command.HouseholdName);
+
+        household.AddOwnerMember(
+            ownerMemberId,
+            command.OwnerDisplayName,
+            command.OwnerEmail);
 
         await _tenantRepository.AddAsync(tenant, cancellationToken);
         await _householdRepository.AddAsync(household, cancellationToken);
@@ -42,6 +48,7 @@ public sealed class CreateTenantAndHouseholdHandler
         return new CreateTenantAndHouseholdResponse(
             tenantId.Value,
             householdId.Value,
+            ownerMemberId.Value,
             tenant.Name,
             household.Name);
     }

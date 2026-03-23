@@ -74,6 +74,44 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
             builder.Property(x => x.Status)
                 .HasConversion<int>()
                 .IsRequired();
+
+            builder.HasMany(x => x.Members)
+               .WithOne()
+               .HasForeignKey("HouseholdId")
+               .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Metadata.FindNavigation(nameof(Household.Members))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        modelBuilder.Entity<HouseholdMember>(builder =>
+        {
+            builder.ToTable("household_members");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdMemberId(value));
+
+            builder.Property<HouseholdId>("HouseholdId")
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdId(value))
+                .IsRequired();
+
+            builder.Property(x => x.DisplayName)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(x => x.Email)
+                .HasMaxLength(320)
+                .IsRequired();
+
+            builder.Property(x => x.Role)
+                .HasConversion<int>()
+                .IsRequired();
         });
     }
 
