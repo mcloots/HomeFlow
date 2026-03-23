@@ -9,7 +9,7 @@ public static class TenancyModule
 {
     public static IServiceCollection AddTenancyModule(this IServiceCollection services)
     {
-        services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
+        services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<CreateTenantAndHouseholdHandler>();
 
         return services;

@@ -1,7 +1,10 @@
+using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
+using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
 using HomeFlow.Modules.Households.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Tenancy.Infrastructure.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<HomeFlowDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUnitOfWork>(sp =>
+    sp.GetRequiredService<HomeFlowDbContext>());
 
 builder.Services
     //.AddIdentityModule()

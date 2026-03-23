@@ -8,7 +8,7 @@ public static class HouseholdsModule
 {
     public static IServiceCollection AddHouseholdsModule(this IServiceCollection services)
     {
-        services.AddSingleton<IHouseholdRepository, InMemoryHouseholdRepository>();
+        services.AddScoped<IHouseholdRepository, HouseholdRepository>();
 
         return services;
     }

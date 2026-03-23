@@ -1,6 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Tenancy\HomeFlow.Modules.Tenancy.Domain\HomeFlow.Modules.Tenancy.Domain.csproj" />
     <ProjectReference Include="..\HomeFlow.BuildingBlocks.Application\HomeFlow.BuildingBlocks.Application.csproj" />
   </ItemGroup>
 
