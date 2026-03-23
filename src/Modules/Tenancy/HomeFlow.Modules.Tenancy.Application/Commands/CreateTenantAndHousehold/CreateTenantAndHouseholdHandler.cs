@@ -28,6 +28,15 @@ public sealed class CreateTenantAndHouseholdHandler
         CreateTenantAndHouseholdCommand command,
         CancellationToken cancellationToken = default)
     {
+        var ownerEmailExists = await _householdRepository.MemberEmailExistsAsync(
+            command.OwnerEmail,
+            cancellationToken);
+
+        if (ownerEmailExists)
+        {
+            throw new InvalidOperationException("A household member with this email already exists.");
+        }
+
         var tenantId = TenantId.New();
         var householdId = HouseholdId.New();
         var ownerMemberId = HouseholdMemberId.New();

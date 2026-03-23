@@ -112,6 +112,9 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
             builder.Property(x => x.Role)
                 .HasConversion<int>()
                 .IsRequired();
+
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
         });
     }
 

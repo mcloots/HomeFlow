@@ -7,4 +7,5 @@ public interface IHouseholdRepository
 {
     Task AddAsync(Household household, CancellationToken cancellationToken = default);
     Task<Household?> GetByIdAsync(HouseholdId householdId, CancellationToken cancellationToken = default);
+    Task<bool> MemberEmailExistsAsync(string email, CancellationToken cancellationToken = default);
 }

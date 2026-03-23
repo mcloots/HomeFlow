@@ -25,4 +25,12 @@ public sealed class HouseholdRepository : IHouseholdRepository
         return _dbContext.Households
             .SingleOrDefaultAsync(x => x.Id == householdId, cancellationToken);
     }
+
+    public Task<bool> MemberEmailExistsAsync(string email, CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = email.Trim().ToLower();
+
+        return _dbContext.Set<HouseholdMember>()
+            .AnyAsync(x => x.Email == normalizedEmail, cancellationToken);
+    }
 }
