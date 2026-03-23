@@ -21,17 +21,24 @@ public sealed class OnboardingController : ControllerBase
         [FromBody] CreateTenantAndHouseholdRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new CreateTenantAndHouseholdCommand(
-            request.TenantName,
-            request.HouseholdName,
-            request.OwnerDisplayName,
-            request.OwnerEmail);
+        try
+        {
+            var command = new CreateTenantAndHouseholdCommand(
+                request.TenantName,
+                request.HouseholdName,
+                request.OwnerDisplayName,
+                request.OwnerEmail);
 
-        var response = await _handler.Handle(command, cancellationToken);
+            var response = await _handler.Handle(command, cancellationToken);
 
-        return CreatedAtAction(
-            nameof(CreateTenantAndHousehold),
-            new { tenantId = response.TenantId },
-            response);
+            return CreatedAtAction(
+                nameof(CreateTenantAndHousehold),
+                new { tenantId = response.TenantId },
+                response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }
