@@ -1,5 +1,7 @@
+using HomeFlow.BuildingBlocks.Application.Abstractions;
 using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
 using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
+using HomeFlow.BuildingBlocks.Infrastructure.Services;
 using HomeFlow.Modules.Households.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
@@ -21,6 +23,8 @@ builder.Services.AddDbContext<HomeFlowDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork>(sp =>
     sp.GetRequiredService<HomeFlowDbContext>());
+
+builder.Services.AddScoped<IDateTimeProvider, SystemDateTimeProvider>();
 
 builder.Services
     //.AddIdentityModule()

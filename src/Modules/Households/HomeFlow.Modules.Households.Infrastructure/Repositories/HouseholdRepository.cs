@@ -23,6 +23,7 @@ public sealed class HouseholdRepository : IHouseholdRepository
     public Task<Household?> GetByIdAsync(HouseholdId householdId, CancellationToken cancellationToken = default)
     {
         return _dbContext.Households
+            .Include(x => x.Members)
             .SingleOrDefaultAsync(x => x.Id == householdId, cancellationToken);
     }
 

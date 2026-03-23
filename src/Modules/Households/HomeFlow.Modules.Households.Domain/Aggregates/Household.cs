@@ -71,4 +71,13 @@ public sealed class Household : AggregateRoot<HouseholdId>, ITenantOwned
         if (Status != HouseholdStatus.Active)
             throw new DomainException("Only active households can be modified.");
     }
+
+    public bool HasManagementPermissions(string email)
+    {
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        return _members.Any(m =>
+            m.Email == normalizedEmail &&
+            (m.Role == HouseholdRole.Owner || m.Role == HouseholdRole.Administrator));
+    }
 }

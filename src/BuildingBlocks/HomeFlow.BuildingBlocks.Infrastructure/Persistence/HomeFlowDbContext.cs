@@ -16,11 +16,13 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Household> Households => Set<Household>();
+    public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureTenancy(modelBuilder);
         ConfigureHouseholds(modelBuilder);
+        ConfigureHouseholdInvitations(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
     }
@@ -115,6 +117,44 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
 
             builder.HasIndex(x => x.Email)
                 .IsUnique();
+        });
+    }
+
+    private static void ConfigureHouseholdInvitations(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<HouseholdInvitation>(builder =>
+        {
+            builder.ToTable("household_invitations");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdInvitationId(value));
+
+            builder.Property(x => x.HouseholdId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdId(value))
+                .IsRequired();
+
+            builder.Property(x => x.Email)
+                .HasMaxLength(320)
+                .IsRequired();
+
+            builder.Property(x => x.Role)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(x => x.CreatedAtUtc)
+                .IsRequired();
+
+            builder.HasIndex(x => new { x.HouseholdId, x.Email, x.Status });
         });
     }
 
