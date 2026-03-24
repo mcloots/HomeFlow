@@ -86,4 +86,35 @@ public sealed class HouseholdTests
         act.Should().Throw<DomainException>()
             .WithMessage("*active households*");
     }
+
+    [Fact]
+    public void HasManagementPermissions_Should_Return_True_For_Owner()
+    {
+        var household = Household.Create(HouseholdId.New(), TenantId.New(), "Main Household");
+
+        household.AddOwnerMember(
+            HouseholdMemberId.New(),
+            "Mich",
+            "mich@example.com");
+
+        var result = household.HasManagementPermissions("mich@example.com");
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasManagementPermissions_Should_Return_False_For_Regular_Member()
+    {
+        var household = Household.Create(HouseholdId.New(), TenantId.New(), "Main Household");
+
+        household.AddMember(
+            HouseholdMemberId.New(),
+            "User",
+            "user@example.com",
+            HouseholdRole.Member);
+
+        var result = household.HasManagementPermissions("user@example.com");
+
+        result.Should().BeFalse();
+    }
 }

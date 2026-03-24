@@ -1,6 +1,9 @@
-﻿using HomeFlow.Modules.Households.Application.Commands.AcceptHouseholdInvitation;
+﻿using HomeFlow.Modules.Households.Application.Abstractions;
+using HomeFlow.Modules.Households.Application.Commands.AcceptHouseholdInvitation;
 using HomeFlow.Modules.Households.Application.Commands.DeclineHouseholdInvitation;
 using HomeFlow.Modules.Households.Application.Commands.InviteHouseholdMember;
+using HomeFlow.Modules.Households.Application.Commands.RevokeHouseholdInvitation;
+using HomeFlow.Modules.Households.Application.Queries.GetHouseholdDetails;
 using HomeFlow.Modules.Households.Domain.Repositories;
 using HomeFlow.Modules.Households.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +16,13 @@ public static class HouseholdsModule
     {
         services.AddScoped<IHouseholdRepository, HouseholdRepository>();
         services.AddScoped<IHouseholdInvitationRepository, HouseholdInvitationRepository>();
+        services.AddScoped<IHouseholdReadRepository, HouseholdReadRepository>();
 
         services.AddScoped<InviteHouseholdMemberHandler>();
         services.AddScoped<AcceptHouseholdInvitationHandler>();
         services.AddScoped<DeclineHouseholdInvitationHandler>();
+        services.AddScoped<GetHouseholdDetailsHandler>();
+        services.AddScoped<RevokeHouseholdInvitationHandler>();
 
         return services;
     }
