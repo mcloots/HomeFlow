@@ -11,7 +11,23 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string CorsPolicyName = "FrontendCors";
+
 // Add services to the container.
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:2745",   // Angular dev
+                "https://localhost:2745"   // Angular HTTPS 
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -35,6 +51,8 @@ builder.Services
     .AddSchedulingModule();
 
 var app = builder.Build();
+
+app.UseCors(CorsPolicyName);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

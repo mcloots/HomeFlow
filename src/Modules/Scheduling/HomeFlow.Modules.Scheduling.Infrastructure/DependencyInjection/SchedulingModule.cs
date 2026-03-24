@@ -1,5 +1,6 @@
 ﻿using HomeFlow.Modules.Scheduling.Application.Abstractions;
 using HomeFlow.Modules.Scheduling.Application.Commands.CreateAppointment;
+using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentDetails;
 using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
 using HomeFlow.Modules.Scheduling.Domain.Repositories;
 using HomeFlow.Modules.Scheduling.Infrastructure.Repositories;
@@ -17,6 +18,7 @@ public static class SchedulingModule
 
         services.AddScoped<CreateAppointmentHandler>();
         services.AddScoped<GetAppointmentsForDateRangeHandler>();
+        services.AddScoped<GetAppointmentDetailsHandler>();
 
         return services;
     }

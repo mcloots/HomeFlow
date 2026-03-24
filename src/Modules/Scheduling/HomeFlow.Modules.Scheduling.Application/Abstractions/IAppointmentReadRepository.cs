@@ -1,4 +1,5 @@
-﻿using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
+﻿using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentDetails;
+using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
 
 namespace HomeFlow.Modules.Scheduling.Application.Abstractions;
 
@@ -8,5 +9,9 @@ public interface IAppointmentReadRepository
         Guid householdId,
         DateTime fromUtc,
         DateTime toUtc,
+        CancellationToken cancellationToken = default);
+
+    Task<GetAppointmentDetailsResponse?> GetDetailsByIdAsync(
+        Guid appointmentId,
         CancellationToken cancellationToken = default);
 }

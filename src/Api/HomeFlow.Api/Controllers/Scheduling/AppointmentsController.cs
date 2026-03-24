@@ -1,5 +1,6 @@
 ﻿using HomeFlow.Api.Contracts.Scheduling;
 using HomeFlow.Modules.Scheduling.Application.Commands.CreateAppointment;
+using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentDetails;
 using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,14 +11,17 @@ namespace HomeFlow.Api.Controllers.Scheduling;
 public sealed class AppointmentsController : ControllerBase
 {
     private readonly CreateAppointmentHandler _createAppointmentHandler;
-    private readonly GetAppointmentsForDateRangeHandler _getHandler;
+    private readonly GetAppointmentsForDateRangeHandler _getForDateRangeHandler;
+    private readonly GetAppointmentDetailsHandler _getDetailsHandler;
 
     public AppointmentsController(
-    CreateAppointmentHandler createAppointmentHandler,
-    GetAppointmentsForDateRangeHandler getHandler)
+        CreateAppointmentHandler createAppointmentHandler,
+        GetAppointmentsForDateRangeHandler getForDateRangeHandler,
+        GetAppointmentDetailsHandler getDetailsHandler)
     {
         _createAppointmentHandler = createAppointmentHandler;
-        _getHandler = getHandler;
+        _getForDateRangeHandler = getForDateRangeHandler;
+        _getDetailsHandler = getDetailsHandler;
     }
 
     [HttpPost]
@@ -63,13 +67,32 @@ public sealed class AppointmentsController : ControllerBase
                 fromUtc,
                 toUtc);
 
-            var result = await _getHandler.Handle(query, cancellationToken);
+            var result = await _getForDateRangeHandler.Handle(query, cancellationToken);
 
             return Ok(result);
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("{appointmentId:guid}")]
+    [ProducesResponseType(typeof(GetAppointmentDetailsResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<GetAppointmentDetailsResponse>> GetById(
+    [FromRoute] Guid appointmentId,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new GetAppointmentDetailsQuery(appointmentId);
+            var result = await _getDetailsHandler.Handle(query, cancellationToken);
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
         }
     }
 }
