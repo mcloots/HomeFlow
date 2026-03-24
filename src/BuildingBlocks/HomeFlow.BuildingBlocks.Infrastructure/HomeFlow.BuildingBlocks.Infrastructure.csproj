@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Domain\HomeFlow.Modules.Scheduling.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Tenancy\HomeFlow.Modules.Tenancy.Domain\HomeFlow.Modules.Tenancy.Domain.csproj" />
     <ProjectReference Include="..\HomeFlow.BuildingBlocks.Application\HomeFlow.BuildingBlocks.Application.csproj" />
   </ItemGroup>

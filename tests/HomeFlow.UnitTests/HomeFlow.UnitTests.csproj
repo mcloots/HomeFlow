@@ -22,6 +22,8 @@
     <ProjectReference Include="..\..\src\BuildingBlocks\HomeFlow.BuildingBlocks.MultiTenancy\HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
     <ProjectReference Include="..\..\src\Modules\Households\HomeFlow.Modules.Households.Application\HomeFlow.Modules.Households.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Scheduling\HomeFlow.Modules.Scheduling.Application\HomeFlow.Modules.Scheduling.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Scheduling\HomeFlow.Modules.Scheduling.Domain\HomeFlow.Modules.Scheduling.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Tenancy\HomeFlow.Modules.Tenancy.Application\HomeFlow.Modules.Tenancy.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Tenancy\HomeFlow.Modules.Tenancy.Domain\HomeFlow.Modules.Tenancy.Domain.csproj" />
   </ItemGroup>

@@ -3,6 +3,7 @@ using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
 using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
 using HomeFlow.BuildingBlocks.Infrastructure.Services;
 using HomeFlow.Modules.Households.Infrastructure.DependencyInjection;
+using HomeFlow.Modules.Scheduling.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Tenancy.Infrastructure.DependencyInjection;
@@ -30,7 +31,8 @@ builder.Services
     //.AddIdentityModule()
     .AddTenancyModule()
     //.AddSubscriptionsModule()
-    .AddHouseholdsModule();
+    .AddHouseholdsModule()
+    .AddSchedulingModule();
 
 var app = builder.Build();
 

@@ -2,6 +2,9 @@
 using HomeFlow.BuildingBlocks.MultiTenancy.Models;
 using HomeFlow.Modules.Households.Domain.Aggregates;
 using HomeFlow.Modules.Households.Domain.Ids;
+using HomeFlow.Modules.Scheduling.Domain.Aggregates;
+using HomeFlow.Modules.Scheduling.Domain.Entities;
+using HomeFlow.Modules.Scheduling.Domain.Ids;
 using HomeFlow.Modules.Tenancy.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,12 +20,14 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Household> Households => Set<Household>();
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureTenancy(modelBuilder);
         ConfigureHouseholds(modelBuilder);
         ConfigureHouseholdInvitations(modelBuilder);
+        ConfigureScheduling(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
     }
@@ -158,6 +163,87 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
         });
     }
 
+    private static void ConfigureScheduling(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Appointment>(builder =>
+        {
+            builder.ToTable("appointments");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new AppointmentId(value));
+
+            builder.Property(x => x.TenantId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new TenantId(value))
+                .IsRequired();
+
+            builder.Property(x => x.HouseholdId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdId(value))
+                .IsRequired();
+
+            builder.Property(x => x.Title)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(x => x.Description)
+                .HasMaxLength(2000);
+
+            builder.Property(x => x.StartsAtUtc)
+                .IsRequired();
+
+            builder.Property(x => x.EndsAtUtc)
+                .IsRequired();
+
+            builder.Property(x => x.Location)
+                .HasMaxLength(300);
+
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.HasMany(x => x.Participants)
+                .WithOne()
+                .HasForeignKey("AppointmentId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Metadata.FindNavigation(nameof(Appointment.Participants))!
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        modelBuilder.Entity<AppointmentParticipant>(builder =>
+        {
+            builder.ToTable("appointment_participants");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new AppointmentParticipantId(value));
+
+            builder.Property<AppointmentId>("AppointmentId")
+                .HasConversion(
+                    id => id.Value,
+                    value => new AppointmentId(value))
+                .IsRequired();
+
+            builder.Property(x => x.HouseholdMemberId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdMemberId(value))
+                .IsRequired();
+
+            builder.HasIndex("AppointmentId", nameof(AppointmentParticipant.HouseholdMemberId))
+                .IsUnique();
+        });
+    }
     public async new Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await base.SaveChangesAsync(cancellationToken);

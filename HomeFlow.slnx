@@ -22,6 +22,12 @@
     <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Domain/HomeFlow.Modules.Identity.Domain.csproj" />
     <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Infrastructure/HomeFlow.Modules.Identity.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Scheduling/">
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Application/HomeFlow.Modules.Scheduling.Application.csproj" Id="14145a2f-26b5-496e-80fe-bc88f0f01163" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Contracts/HomeFlow.Modules.Scheduling.Contracts.csproj" Id="57e74c5d-33bb-43c2-a83d-6ce0928c5462" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Domain/HomeFlow.Modules.Scheduling.Domain.csproj" Id="b38de3e9-e0ab-47d4-ac3e-bdd3457e87c4" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Infrastructure/HomeFlow.Modules.Scheduling.Infrastructure.csproj" Id="da7836fe-2bf4-43bc-b061-29897ba50dc9" />
+  </Folder>
   <Folder Name="/src/Modules/Subscriptions/">
     <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Application/HomeFlow.Modules.Subscriptions.Application.csproj" />
     <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Contracts/HomeFlow.Modules.Subscriptions.Contracts.csproj" />
