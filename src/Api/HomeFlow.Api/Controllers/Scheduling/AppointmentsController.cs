@@ -1,5 +1,6 @@
 ﻿using HomeFlow.Api.Contracts.Scheduling;
 using HomeFlow.Modules.Scheduling.Application.Commands.CreateAppointment;
+using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFlow.Api.Controllers.Scheduling;
@@ -9,10 +10,14 @@ namespace HomeFlow.Api.Controllers.Scheduling;
 public sealed class AppointmentsController : ControllerBase
 {
     private readonly CreateAppointmentHandler _createAppointmentHandler;
+    private readonly GetAppointmentsForDateRangeHandler _getHandler;
 
-    public AppointmentsController(CreateAppointmentHandler createAppointmentHandler)
+    public AppointmentsController(
+    CreateAppointmentHandler createAppointmentHandler,
+    GetAppointmentsForDateRangeHandler getHandler)
     {
         _createAppointmentHandler = createAppointmentHandler;
+        _getHandler = getHandler;
     }
 
     [HttpPost]
@@ -36,6 +41,31 @@ public sealed class AppointmentsController : ControllerBase
             var response = await _createAppointmentHandler.Handle(command, cancellationToken);
 
             return CreatedAtAction(nameof(Create), new { appointmentId = response.AppointmentId }, response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(GetAppointmentsForDateRangeResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<GetAppointmentsForDateRangeResponse>> GetForDateRange(
+    [FromQuery] Guid householdId,
+    [FromQuery] DateTime fromUtc,
+    [FromQuery] DateTime toUtc,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new GetAppointmentsForDateRangeQuery(
+                householdId,
+                fromUtc,
+                toUtc);
+
+            var result = await _getHandler.Handle(query, cancellationToken);
+
+            return Ok(result);
         }
         catch (InvalidOperationException ex)
         {
