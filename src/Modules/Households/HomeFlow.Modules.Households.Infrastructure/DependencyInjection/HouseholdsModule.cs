@@ -1,4 +1,6 @@
-﻿using HomeFlow.Modules.Households.Application.Commands.InviteHouseholdMember;
+﻿using HomeFlow.Modules.Households.Application.Commands.AcceptHouseholdInvitation;
+using HomeFlow.Modules.Households.Application.Commands.DeclineHouseholdInvitation;
+using HomeFlow.Modules.Households.Application.Commands.InviteHouseholdMember;
 using HomeFlow.Modules.Households.Domain.Repositories;
 using HomeFlow.Modules.Households.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +13,10 @@ public static class HouseholdsModule
     {
         services.AddScoped<IHouseholdRepository, HouseholdRepository>();
         services.AddScoped<IHouseholdInvitationRepository, HouseholdInvitationRepository>();
+
         services.AddScoped<InviteHouseholdMemberHandler>();
+        services.AddScoped<AcceptHouseholdInvitationHandler>();
+        services.AddScoped<DeclineHouseholdInvitationHandler>();
 
         return services;
     }

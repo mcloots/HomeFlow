@@ -50,6 +50,24 @@ public sealed class Household : AggregateRoot<HouseholdId>, ITenantOwned
         return member;
     }
 
+    public HouseholdMember AddMember(HouseholdMemberId memberId, string displayName, string email, HouseholdRole role)
+    {
+        EnsureActive();
+
+        if (string.IsNullOrWhiteSpace(email))
+            throw new DomainException("Email is required.");
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        if (_members.Any(m => m.Email == normalizedEmail))
+            throw new DomainException("A member with this email already exists in the household.");
+
+        var member = HouseholdMember.Create(memberId, displayName, normalizedEmail, role);
+        _members.Add(member);
+
+        return member;
+    }
+
     public void Rename(string name)
     {
         EnsureActive();
