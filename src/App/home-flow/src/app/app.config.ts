@@ -1,18 +1,17 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
-import { APP_RUNTIME_CONFIG } from './core/config/app.config.token';
+import { RuntimeConfigService } from './core/config/runtime-config.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(),
-    {
-      provide: APP_RUNTIME_CONFIG,
-      useValue: {
-        apiBaseUrl: 'https://localhost:7098/api',
-      },
-    },
+    RuntimeConfigService,
+    provideAppInitializer(() => {
+      const config = inject(RuntimeConfigService);
+      return config.load();
+    }),
   ],
 };

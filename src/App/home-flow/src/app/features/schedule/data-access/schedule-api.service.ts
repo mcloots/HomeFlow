@@ -1,25 +1,25 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import {
-  GetAppointmentsForDateRangeResponse,
-} from '../models/schedule.models';
-import {
-  APP_RUNTIME_CONFIG,
-  AppRuntimeConfig,
-} from '../../../core/config/app.config.token';
+import { GetAppointmentsForDateRangeResponse } from '../models/schedule.models';
+import { RuntimeConfigService } from '../../../core/config/runtime-config.service';
+import { AppointmentDetails } from '../models/appointment-details.models';
 
 @Injectable({ providedIn: 'root' })
 export class ScheduleApiService {
   constructor(
     private readonly http: HttpClient,
-    @Inject(APP_RUNTIME_CONFIG) private readonly config: AppRuntimeConfig
+    private readonly runtimeConfig: RuntimeConfigService,
   ) {}
+
+  private get baseUrl(): string {
+    return this.runtimeConfig.get().apiBaseUrl;
+  }
 
   getAppointmentsForDateRange(
     householdId: string,
     fromUtc: string,
-    toUtc: string
+    toUtc: string,
   ): Observable<GetAppointmentsForDateRangeResponse> {
     const params = new HttpParams()
       .set('householdId', householdId)
@@ -27,8 +27,14 @@ export class ScheduleApiService {
       .set('toUtc', toUtc);
 
     return this.http.get<GetAppointmentsForDateRangeResponse>(
-      `${this.config.apiBaseUrl}/appointments`,
-      { params }
+      `${this.baseUrl}/appointments`,
+      { params },
+    );
+  }
+
+  getAppointmentDetails(appointmentId: string): Observable<AppointmentDetails> {
+    return this.http.get<AppointmentDetails>(
+      `${this.baseUrl}/appointments/${appointmentId}`
     );
   }
 }

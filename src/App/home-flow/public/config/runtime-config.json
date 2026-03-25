@@ -1,0 +1,5 @@
+{
+  "apiBaseUrl": "https://localhost:7098/api",
+  "defaultTenantId": "a3c7c8b1-9b24-44f3-bf72-ecd464c36100",
+  "defaultHouseholdId": "9ada2521-22f7-4052-bb4c-ffd85f98d225"
+}
