@@ -3,10 +3,12 @@ using HomeFlow.Modules.Integrations.Gmail.Application.Commands.CompleteGmailConn
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.DisconnectGmailConnection;
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.StartGmailConnect;
 using HomeFlow.Modules.Integrations.Gmail.Application.Queries.GetCurrentGmailConnectionByHousehold;
+using HomeFlow.Modules.Integrations.Gmail.Application.Queries.ScanGmailForAppointmentSuggestions;
 using HomeFlow.Modules.Integrations.Gmail.Domain.Repositories;
 using HomeFlow.Modules.Integrations.Gmail.Infrastructure.Configuration;
 using HomeFlow.Modules.Integrations.Gmail.Infrastructure.OAuth;
 using HomeFlow.Modules.Integrations.Gmail.Infrastructure.Repositories;
+using HomeFlow.Modules.Integrations.Gmail.Infrastructure.Scanning;
 using HomeFlow.Modules.Integrations.Gmail.Infrastructure.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,11 +27,15 @@ public static class GmailModule
         services.AddSingleton<IGmailOAuthStateStore, InMemoryGmailOAuthStateStore>();
         services.AddScoped<ITokenEncryptionService, DataProtectionTokenEncryptionService>();
         services.AddScoped<IGoogleIdTokenReader, GoogleIdTokenReader>();
+        services.AddScoped<IGmailScanner, GmailScanner>();
+        services.AddScoped<IGmailSuggestionParser, NaiveGmailSuggestionParser>();
+        services.AddScoped<IGoogleCredentialFactory, GoogleCredentialFactory>();   
 
         services.AddScoped<StartGmailConnectHandler>();
         services.AddScoped<CompleteGmailConnectHandler>();
         services.AddScoped<DisconnectGmailConnectionHandler>();
         services.AddScoped<GetCurrentGmailConnectionByHouseholdHandler>();
+        services.AddScoped<ScanGmailForAppointmentSuggestionsHandler>();
 
         return services;
     }

@@ -2,6 +2,7 @@
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.DisconnectGmailConnection;
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.StartGmailConnect;
 using HomeFlow.Modules.Integrations.Gmail.Application.Queries.GetCurrentGmailConnectionByHousehold;
+using HomeFlow.Modules.Integrations.Gmail.Application.Queries.ScanGmailForAppointmentSuggestions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFlow.Api.Controllers.Integrations;
@@ -14,17 +15,20 @@ public sealed class GmailIntegrationsController : ControllerBase
     private readonly CompleteGmailConnectHandler _completeHandler;
     private readonly DisconnectGmailConnectionHandler _disconnectHandler;
     private readonly GetCurrentGmailConnectionByHouseholdHandler _getCurrentHandler;
+    private readonly ScanGmailForAppointmentSuggestionsHandler _scanSuggestionsHandler;
 
     public GmailIntegrationsController(
         StartGmailConnectHandler startHandler,
         CompleteGmailConnectHandler completeHandler,
         DisconnectGmailConnectionHandler disconnectHandler,
-        GetCurrentGmailConnectionByHouseholdHandler getCurrentHandler)
+        GetCurrentGmailConnectionByHouseholdHandler getCurrentHandler,
+        ScanGmailForAppointmentSuggestionsHandler scanSuggestionsHandler)
     {
         _startHandler = startHandler;
         _completeHandler = completeHandler;
         _disconnectHandler = disconnectHandler;
         _getCurrentHandler = getCurrentHandler;
+        _scanSuggestionsHandler = scanSuggestionsHandler;
     }
 
     [HttpPost("connect/start")]
@@ -85,6 +89,30 @@ public sealed class GmailIntegrationsController : ControllerBase
             await _disconnectHandler.Handle(command, cancellationToken);
 
             return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("scan-suggestions")]
+    public async Task<ActionResult<ScanGmailForAppointmentSuggestionsResponse>> ScanSuggestions(
+    [FromQuery] Guid householdId,
+    [FromQuery] DateTime fromUtc,
+    [FromQuery] DateTime toUtc,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new ScanGmailForAppointmentSuggestionsQuery(
+                householdId,
+                fromUtc,
+                toUtc);
+
+            var result = await _scanSuggestionsHandler.Handle(query, cancellationToken);
+
+            return Ok(result);
         }
         catch (InvalidOperationException ex)
         {
