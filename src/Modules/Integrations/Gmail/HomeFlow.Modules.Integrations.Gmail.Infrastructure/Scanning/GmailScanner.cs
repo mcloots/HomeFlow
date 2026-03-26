@@ -70,8 +70,13 @@ public sealed class GmailScanner : IGmailScanner
         var afterEpoch = new DateTimeOffset(fromUtc).ToUnixTimeSeconds();
         var beforeEpoch = new DateTimeOffset(toUtc).ToUnixTimeSeconds();
 
+        var query =
+            $"after:{afterEpoch} " +
+            $"before:{beforeEpoch} " +
+            "(invoice OR factuur OR betaling OR payment OR bill OR rekening OR due OR vervaldatum OR amount due OR te betalen OR Payconiq OR SEPA)";
+
         // search syntax supported by Gmail API q parameter
-        return $"after:{afterEpoch} before:{beforeEpoch}";
+        return query;
     }
 
     private async Task<GmailService> CreateGmailServiceAsync(
