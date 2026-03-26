@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Application\HomeFlow.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.MultiTenancy\HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+    <ProjectReference Include="..\HomeFlow.Modules.Integrations.Gmail.Domain\HomeFlow.Modules.Integrations.Gmail.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

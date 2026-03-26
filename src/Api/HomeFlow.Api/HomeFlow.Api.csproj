@@ -27,6 +27,9 @@
     <ProjectReference Include="..\..\Modules\Identity\HomeFlow.Modules.Identity.Application\HomeFlow.Modules.Identity.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\HomeFlow.Modules.Identity.Infrastructure\HomeFlow.Modules.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Identity\HomeFlow.Modules.Identity.Contracts\HomeFlow.Modules.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Application\HomeFlow.Modules.Integrations.Gmail.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Contracts\HomeFlow.Modules.Integrations.Gmail.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Infrastructure\HomeFlow.Modules.Integrations.Gmail.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Application\HomeFlow.Modules.Scheduling.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Contracts\HomeFlow.Modules.Scheduling.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Infrastructure\HomeFlow.Modules.Scheduling.Infrastructure.csproj" />

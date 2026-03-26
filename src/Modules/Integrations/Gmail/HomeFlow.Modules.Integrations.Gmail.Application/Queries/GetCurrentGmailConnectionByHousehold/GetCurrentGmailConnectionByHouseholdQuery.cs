@@ -1,0 +1,3 @@
+﻿namespace HomeFlow.Modules.Integrations.Gmail.Application.Queries.GetCurrentGmailConnectionByHousehold;
+
+public sealed record GetCurrentGmailConnectionByHouseholdQuery(Guid HouseholdId);

@@ -7,6 +7,7 @@ using HomeFlow.Modules.Scheduling.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Subscriptions.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Tenancy.Infrastructure.DependencyInjection;
+using HomeFlow.Modules.Integrations.Gmail.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,12 +44,15 @@ builder.Services.AddScoped<IUnitOfWork>(sp =>
 
 builder.Services.AddScoped<IDateTimeProvider, SystemDateTimeProvider>();
 
+builder.Services.AddDataProtection();
+
 builder.Services
     //.AddIdentityModule()
     .AddTenancyModule()
     //.AddSubscriptionsModule()
     .AddHouseholdsModule()
-    .AddSchedulingModule();
+    .AddSchedulingModule()
+    .AddGmailModule(builder.Configuration);
 
 var app = builder.Build();
 

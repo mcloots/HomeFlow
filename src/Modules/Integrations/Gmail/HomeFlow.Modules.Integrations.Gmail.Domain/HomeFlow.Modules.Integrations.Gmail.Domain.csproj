@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Domain\HomeFlow.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.MultiTenancy\HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

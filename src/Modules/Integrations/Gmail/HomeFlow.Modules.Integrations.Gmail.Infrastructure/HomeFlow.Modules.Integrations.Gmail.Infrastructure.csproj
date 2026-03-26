@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
+    <PackageReference Include="Google.Apis.Gmail.v1" Version="1.73.0.4029" />
+    <PackageReference Include="Google.Apis.Oauth2.v2" Version="1.68.0.1869" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Application\HomeFlow.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Infrastructure\HomeFlow.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.MultiTenancy\HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\Households\HomeFlow.Modules.Households.Domain\HomeFlow.Modules.Households.Domain.csproj" />
+    <ProjectReference Include="..\HomeFlow.Modules.Integrations.Gmail.Application\HomeFlow.Modules.Integrations.Gmail.Application.csproj" />
+    <ProjectReference Include="..\HomeFlow.Modules.Integrations.Gmail.Domain\HomeFlow.Modules.Integrations.Gmail.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

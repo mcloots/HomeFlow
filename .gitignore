@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/App/home-flow/.vscode
+/src/Api/HomeFlow.Api/appsettings.Development.json

@@ -74,6 +74,47 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
         _participants.Add(AppointmentParticipant.Create(id, householdMemberId));
     }
 
+    public void UpdateDetails(
+    string title,
+    string? description,
+    DateTime startsAtUtc,
+    DateTime endsAtUtc,
+    string? location)
+    {
+        EnsureNotCancelled();
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException("Title is required.");
+
+        if (endsAtUtc <= startsAtUtc)
+            throw new DomainException("End time must be after start time.");
+
+        Title = title.Trim();
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        StartsAtUtc = startsAtUtc;
+        EndsAtUtc = endsAtUtc;
+        Location = string.IsNullOrWhiteSpace(location) ? null : location.Trim();
+    }
+
+    public void ReplaceParticipants(IReadOnlyCollection<HouseholdMemberId> participantIds)
+    {
+        EnsureNotCancelled();
+
+        var distinctParticipantIds = participantIds
+            .Distinct()
+            .ToList();
+
+        _participants.Clear();
+
+        foreach (var participantId in distinctParticipantIds)
+        {
+            _participants.Add(
+                AppointmentParticipant.Create(
+                    AppointmentParticipantId.New(),
+                    participantId));
+        }
+    }
+
     public void Cancel()
     {
         EnsureNotCancelled();

@@ -1,5 +1,6 @@
 ﻿using HomeFlow.Api.Contracts.Scheduling;
 using HomeFlow.Modules.Scheduling.Application.Commands.CreateAppointment;
+using HomeFlow.Modules.Scheduling.Application.Commands.UpdateAppointment;
 using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentDetails;
 using HomeFlow.Modules.Scheduling.Application.Queries.GetAppointmentsForDateRange;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,18 @@ public sealed class AppointmentsController : ControllerBase
     private readonly CreateAppointmentHandler _createAppointmentHandler;
     private readonly GetAppointmentsForDateRangeHandler _getForDateRangeHandler;
     private readonly GetAppointmentDetailsHandler _getDetailsHandler;
+    private readonly UpdateAppointmentHandler _updateAppointmentHandler;
 
     public AppointmentsController(
         CreateAppointmentHandler createAppointmentHandler,
         GetAppointmentsForDateRangeHandler getForDateRangeHandler,
-        GetAppointmentDetailsHandler getDetailsHandler)
+        GetAppointmentDetailsHandler getDetailsHandler,
+        UpdateAppointmentHandler updateAppointmentHandler)
     {
         _createAppointmentHandler = createAppointmentHandler;
         _getForDateRangeHandler = getForDateRangeHandler;
         _getDetailsHandler = getDetailsHandler;
+        _updateAppointmentHandler = updateAppointmentHandler;
     }
 
     [HttpPost]
@@ -93,6 +97,34 @@ public sealed class AppointmentsController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{appointmentId:guid}")]
+    [ProducesResponseType(typeof(UpdateAppointmentResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UpdateAppointmentResponse>> Update(
+    [FromRoute] Guid appointmentId,
+    [FromBody] UpdateAppointmentRequest request,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var command = new UpdateAppointmentCommand(
+                appointmentId,
+                request.Title,
+                request.Description,
+                request.StartsAtUtc,
+                request.EndsAtUtc,
+                request.Location,
+                request.ParticipantMemberIds);
+
+            var response = await _updateAppointmentHandler.Handle(command, cancellationToken);
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 }
