@@ -1,13 +1,16 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppContextStore } from '../../../../core/context/app-context.store';
 import { ScheduleStore } from '../../data-access/schedule.store';
 import { RouterLink } from '@angular/router';
+import { GmailStore } from '../../../gmail/data-access/gmail.store';
+import { CreateAppointmentModalComponent } from '../../components/create-appointment-modal.component/create-appointment-modal.component';
+import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
 
 @Component({
   selector: 'app-schedule-page.component',
-  imports: [CommonModule, FormsModule, DatePipe, RouterLink],
+  imports: [CommonModule, FormsModule, DatePipe, RouterLink, CreateAppointmentModalComponent],
   templateUrl: './schedule-page.component.html',
   styleUrl: './schedule-page.component.css',
 })
@@ -23,9 +26,26 @@ export class SchedulePageComponent {
 
   readonly canLoad = computed(() => this.context.hasHouseholdId());
 
+  readonly gmailStore = inject(GmailStore);
+
+  readonly gmailFromLocalInput = signal(this.toLocalDateTimeInputValue(this.store.fromUtc()));
+  readonly gmailToLocalInput = signal(this.toLocalDateTimeInputValue(this.store.toUtc()));
+
+  readonly isCreateModalOpen = signal(false);
+  readonly selectedSuggestion = signal<AppointmentSuggestion | null>(null);
+
   applyContext(): void {
     this.context.setTenantId(this.tenantIdInput());
     this.context.setHouseholdId(this.householdIdInput());
+  }
+
+  constructor() {
+    effect(() => {
+      if (this.context.hasHouseholdId()) {
+        //void this.store.load(this.context.householdId());
+        void this.gmailStore.loadCurrentConnection();
+      }
+    });
   }
 
   loadSchedule(): void {
@@ -49,5 +69,35 @@ export class SchedulePageComponent {
 
   private localDateTimeInputToUtcIso(localValue: string): string {
     return new Date(localValue).toISOString();
+  }
+
+  useSuggestion(suggestion: AppointmentSuggestion): void {
+    this.selectedSuggestion.set(suggestion);
+    this.isCreateModalOpen.set(true);
+  }
+
+  connectGmail(): void {
+    void this.gmailStore.startConnect();
+  }
+
+  scanGmailSuggestions(): void {
+    const fromUtc = this.localDateTimeInputToUtcIso(this.gmailFromLocalInput());
+    const toUtc = this.localDateTimeInputToUtcIso(this.gmailToLocalInput());
+
+    void this.gmailStore.scanSuggestions(fromUtc, toUtc);
+  }
+
+  disconnectGmail(): void {
+    void this.gmailStore.disconnect();
+  }
+
+  closeCreateModal(): void {
+    this.isCreateModalOpen.set(false);
+    this.selectedSuggestion.set(null);
+  }
+
+  handleAppointmentSaved(): void {
+    this.closeCreateModal();
+    void this.store.load(this.context.householdId());
   }
 }

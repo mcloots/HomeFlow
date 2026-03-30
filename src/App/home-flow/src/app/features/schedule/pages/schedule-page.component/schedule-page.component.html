@@ -160,5 +160,161 @@
         </div>
       }
     </section>
+    <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-medium">Gmail integration</h2>
+          <p class="mt-1 text-sm text-slate-600">
+            Connect Gmail, scan a period, and review appointment suggestions before saving them.
+          </p>
+        </div>
+      </div>
+
+      @if (gmailStore.connectionError()) {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ gmailStore.connectionError() }}
+        </div>
+      }
+
+      <div class="mb-4 rounded-2xl bg-slate-50 p-4">
+        @if (gmailStore.connection(); as connection) {
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div class="text-sm text-slate-500">Connected Gmail account</div>
+              <div class="text-base font-semibold">{{ connection.googleEmail }}</div>
+              <div class="mt-1 text-sm text-slate-600">
+                Status: {{ connection.status }} · Connected at:
+                {{ connection.connectedAtUtc | date: 'medium' }}
+              </div>
+            </div>
+
+            <button
+              class="inline-flex rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+              [disabled]="gmailStore.isDisconnecting()"
+              (click)="disconnectGmail()"
+            >
+              Disconnect
+            </button>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div class="text-sm text-slate-600">
+              No Gmail connection is active for the current household.
+            </div>
+
+            <button
+              class="inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+              [disabled]="!context.isReady() || gmailStore.isConnecting()"
+              (click)="connectGmail()"
+            >
+              Connect Gmail
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">From</span>
+          <input
+            type="datetime-local"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            [ngModel]="gmailFromLocalInput()"
+            (ngModelChange)="gmailFromLocalInput.set($event)"
+          />
+        </label>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">To</span>
+          <input
+            type="datetime-local"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            [ngModel]="gmailToLocalInput()"
+            (ngModelChange)="gmailToLocalInput.set($event)"
+          />
+        </label>
+
+        <div class="flex items-end">
+          <button
+            class="inline-flex w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 disabled:opacity-50"
+            [disabled]="!gmailStore.hasConnection() || gmailStore.isScanning()"
+            (click)="scanGmailSuggestions()"
+          >
+            Scan Gmail
+          </button>
+        </div>
+      </div>
+
+      @if (gmailStore.suggestionError()) {
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {{ gmailStore.suggestionError() }}
+        </div>
+      }
+
+      <div class="mt-6">
+        <div class="mb-3 flex items-center justify-between">
+          <h3 class="text-base font-semibold">Appointment suggestions</h3>
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ gmailStore.suggestions().length }} item(s)
+          </span>
+        </div>
+
+        @if (gmailStore.isScanning()) {
+          <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+            Scanning Gmail suggestions...
+          </div>
+        } @else if (!gmailStore.hasSuggestions()) {
+          <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">No suggestions yet.</div>
+        } @else {
+          <div class="space-y-3">
+            @for (suggestion of gmailStore.suggestionsSorted(); track suggestion.sourceMessageId) {
+              <article class="rounded-2xl border border-slate-200 p-4">
+                <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div class="min-w-0">
+                    <h4 class="text-base font-semibold">{{ suggestion.suggestedTitle }}</h4>
+                    <p class="mt-1 text-sm text-slate-600">
+                      {{ suggestion.sender }} · {{ suggestion.subject }}
+                    </p>
+
+                    @if (suggestion.suggestedStartsAtUtc) {
+                      <p class="mt-2 text-sm text-slate-700">
+                        Suggested:
+                        {{ suggestion.suggestedStartsAtUtc | date: 'medium' }}
+                        @if (suggestion.suggestedEndsAtUtc) {
+                          <span> → {{ suggestion.suggestedEndsAtUtc | date: 'medium' }}</span>
+                        }
+                      </p>
+                    }
+
+                    @if (suggestion.suggestedDescription) {
+                      <p class="mt-2 text-sm text-slate-500">
+                        {{ suggestion.suggestedDescription }}
+                      </p>
+                    }
+
+                    <p class="mt-2 text-xs text-slate-500">
+                      Confidence: {{ suggestion.confidence }} · {{ suggestion.reason }}
+                    </p>
+                  </div>
+
+                  <button
+                    class="inline-flex rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+                    (click)="useSuggestion(suggestion)"
+                  >
+                    Use suggestion
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+    </section>
   </div>
 </div>
+<app-create-appointment-modal
+  [isOpen]="isCreateModalOpen"
+  [suggestion]="selectedSuggestion"
+  (closed)="closeCreateModal()"
+  (saved)="handleAppointmentSaved()"
+/>

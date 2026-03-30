@@ -1,0 +1,107 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+    <div class="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div>
+          <h2 class="text-xl font-semibold">Create appointment</h2>
+          <p class="mt-1 text-sm text-slate-600">
+            Review the suggestion and save it as an appointment.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+          (click)="close()"
+        >
+          Close
+        </button>
+      </div>
+
+      <form class="space-y-4 px-6 py-5" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Title</span>
+          <input
+            formControlName="title"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            type="text"
+          />
+        </label>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Description</span>
+          <textarea
+            formControlName="description"
+            rows="4"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+          ></textarea>
+        </label>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Starts</span>
+            <input
+              formControlName="startsAtLocal"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              type="datetime-local"
+            />
+          </label>
+
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Ends</span>
+            <input
+              formControlName="endsAtLocal"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              type="datetime-local"
+            />
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Location</span>
+          <input
+            formControlName="location"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            type="text"
+          />
+        </label>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">
+            Participant member IDs (comma separated)
+          </span>
+          <input
+            formControlName="participantMemberIds"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            type="text"
+            placeholder="member-id-1, member-id-2"
+          />
+        </label>
+
+        @if (error()) {
+          <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {{ error() }}
+          </div>
+        }
+
+        <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+          <button
+            type="button"
+            class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            (click)="close()"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+            [disabled]="form.invalid || isSaving() || !contextReady()"
+          >
+            Save appointment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
