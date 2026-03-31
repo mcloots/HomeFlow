@@ -31,16 +31,13 @@ public sealed class GmailScanner : IGmailScanner
     {
         var refreshToken = _tokenEncryptionService.Decrypt(encryptedRefreshToken);
 
-        // TODO: gebruik hier je bestaande Google client config
-        // en refresh flow om een geldig access token op te halen.
-        // Voor nu gaan we uit van een helper die een GmailService oplevert.
         var service = await CreateGmailServiceAsync(refreshToken, cancellationToken);
 
         var q = BuildQuery(fromUtc, toUtc);
 
         var listRequest = service.Users.Messages.List("me");
         listRequest.Q = q;
-        listRequest.MaxResults = 50;
+        listRequest.MaxResults = 500;
 
         var listResponse = await listRequest.ExecuteAsync(cancellationToken);
 
@@ -67,15 +64,17 @@ public sealed class GmailScanner : IGmailScanner
 
     private static string BuildQuery(DateTime fromUtc, DateTime toUtc)
     {
-        var afterEpoch = new DateTimeOffset(fromUtc).ToUnixTimeSeconds();
-        var beforeEpoch = new DateTimeOffset(toUtc).ToUnixTimeSeconds();
+        var afterDate = fromUtc.Date.ToString("yyyy/MM/dd");
+        var beforeDate = toUtc.Date.AddDays(1).ToString("yyyy/MM/dd");
+
+        var keywords =
+            "(subject:invoice OR subject:factuur OR subject:betaling OR subject:bill OR subject:rekening OR invoice OR factuur OR betaling OR bill OR rekening)";
 
         var query =
-            $"after:{afterEpoch} " +
-            $"before:{beforeEpoch} " +
-            "(invoice OR factuur OR betaling OR payment OR bill OR rekening OR due OR vervaldatum OR amount due OR te betalen OR Payconiq OR SEPA)";
+            $"after:{afterDate} " +
+            $"before:{beforeDate} " +
+            $"{keywords}";
 
-        // search syntax supported by Gmail API q parameter
         return query;
     }
 

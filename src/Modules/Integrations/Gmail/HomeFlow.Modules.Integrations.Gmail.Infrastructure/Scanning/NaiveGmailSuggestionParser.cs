@@ -14,32 +14,64 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
     public AppointmentSuggestionDto? TryParse(Message message)
     {
         var headers = message.Payload?.Headers ?? [];
+
         var subject = GetHeader(headers, "Subject") ?? "(No subject)";
         var from = GetHeader(headers, "From") ?? "(Unknown sender)";
         var dateHeader = GetHeader(headers, "Date");
 
         var snippet = message.Snippet ?? string.Empty;
-        var text = $"{subject}\n{snippet}";
 
-        var suggestedDate = TryExtractDate(text);
+        var bodyText = ExtractPlainTextBody(message);
 
-        if (suggestedDate is null)
-            return null;
+        var fullText =
+            $"{subject}\n" +
+            $"{snippet}\n" +
+            $"{bodyText}";
 
-        var sourceDate = TryParseHeaderDate(dateHeader) ?? DateTime.UtcNow;
+        var sourceDate =
+            TryParseHeaderDate(dateHeader)
+            ?? DateTime.UtcNow;
 
-        return new AppointmentSuggestionDto(
-            message.Id ?? string.Empty,
-            sourceDate,
-            from,
-            subject,
-            subject,
-            suggestedDate,
-            suggestedDate.Value.AddHours(1),
-            null,
-            snippet,
-            0.55m,
-            "Detected date in subject/snippet");
+        var suggestedDate = TryExtractDate(fullText);
+
+        if (suggestedDate is not null)
+        {
+            return new AppointmentSuggestionDto(
+                message.Id ?? string.Empty,
+                sourceDate,
+                from,
+                subject,
+                BuildSuggestedTitle(subject, from),
+                suggestedDate.Value,
+                suggestedDate.Value.AddHours(1),
+                null,
+                snippet,
+                0.75m,
+                "Detected date in subject/snippet/body");
+        }
+
+        if (LooksLikeInvoice(subject, from, fullText))
+        {
+            var fallbackDate =
+                sourceDate.Date
+                    .AddDays(1)
+                    .AddHours(9);
+
+            return new AppointmentSuggestionDto(
+                message.Id ?? string.Empty,
+                sourceDate,
+                from,
+                subject,
+                BuildSuggestedTitle(subject, from),
+                fallbackDate,
+                fallbackDate.AddMinutes(15),
+                null,
+                snippet,
+                0.40m,
+                "Invoice-like email detected without explicit due date");
+        }
+
+        return null;
     }
 
     private static string? GetHeader(IList<MessagePartHeader> headers, string name)
@@ -70,5 +102,104 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
             return dto.UtcDateTime;
 
         return null;
+    }
+
+    private static bool LooksLikeInvoice(string subject, string from, string snippet)
+    {
+        var text = $"{subject}\n{from}\n{snippet}".ToLowerInvariant();
+
+        return text.Contains("factuur")
+            || text.Contains("invoice")
+            || text.Contains("betaling")
+            || text.Contains("payment")
+            || text.Contains("bill")
+            || text.Contains("rekening")
+            || text.Contains("vervaldatum")
+            || text.Contains("amount due");
+    }
+
+    private static string BuildSuggestedTitle(string subject, string from)
+    {
+        if (subject.StartsWith("Uw factuur", StringComparison.OrdinalIgnoreCase) ||
+            subject.StartsWith("Your invoice", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Pay invoice";
+        }
+
+        if (subject.Contains("factuur", StringComparison.OrdinalIgnoreCase) ||
+            subject.Contains("invoice", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Pay invoice - {subject}";
+        }
+
+        return subject;
+    }
+
+    private static string ExtractPlainTextBody(Message message)
+    {
+        if (message.Payload == null)
+            return string.Empty;
+
+        var plainText = FindPart(message.Payload, "text/plain");
+
+        if (!string.IsNullOrWhiteSpace(plainText))
+            return plainText;
+
+        var htmlText = FindPart(message.Payload, "text/html");
+
+        if (!string.IsNullOrWhiteSpace(htmlText))
+            return StripHtml(htmlText);
+
+        return string.Empty;
+    }
+
+    private static string FindPart(MessagePart part, string mimeType)
+    {
+        if (part.MimeType == mimeType && part.Body?.Data != null)
+        {
+            return DecodeBase64Url(part.Body.Data);
+        }
+
+        if (part.Parts == null)
+            return string.Empty;
+
+        foreach (var subPart in part.Parts)
+        {
+            var result = FindPart(subPart, mimeType);
+
+            if (!string.IsNullOrWhiteSpace(result))
+                return result;
+        }
+
+        return string.Empty;
+    }
+
+    private static string DecodeBase64Url(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        input = input.Replace('-', '+').Replace('_', '/');
+
+        switch (input.Length % 4)
+        {
+            case 2: input += "=="; break;
+            case 3: input += "="; break;
+        }
+
+        var bytes = Convert.FromBase64String(input);
+
+        return System.Text.Encoding.UTF8.GetString(bytes);
+    }
+
+    private static string StripHtml(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html))
+            return string.Empty;
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            html,
+            "<.*?>",
+            " ");
     }
 }

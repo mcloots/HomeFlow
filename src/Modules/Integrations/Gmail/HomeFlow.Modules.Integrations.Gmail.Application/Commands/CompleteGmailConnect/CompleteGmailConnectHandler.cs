@@ -45,9 +45,23 @@ public sealed class CompleteGmailConnectHandler
         if (statePayload is null)
             throw new InvalidOperationException("OAuth state is invalid or expired.");
 
+        var existingConnection = await _repository.GetActiveByHouseholdIdAsync(
+           statePayload.HouseholdId,
+           cancellationToken);
+
+        if (existingConnection is not null)
+        {
+            existingConnection.MarkDisconnected();
+        }
+
         var tokenResult = await _gmailOAuthClient.ExchangeCodeAsync(
             command.Code,
             cancellationToken);
+
+        if (!tokenResult.Scope.Contains("https://www.googleapis.com/auth/gmail.readonly", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Google did not grant the required gmail.readonly scope.");
+        }
 
         if (string.IsNullOrWhiteSpace(tokenResult.RefreshToken))
             throw new InvalidOperationException("No refresh token was returned by Google.");

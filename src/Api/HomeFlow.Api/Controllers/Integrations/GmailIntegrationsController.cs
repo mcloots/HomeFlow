@@ -1,9 +1,11 @@
-﻿using HomeFlow.Modules.Integrations.Gmail.Application.Commands.CompleteGmailConnect;
+﻿using HomeFlow.Api.Configuration;
+using HomeFlow.Modules.Integrations.Gmail.Application.Commands.CompleteGmailConnect;
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.DisconnectGmailConnection;
 using HomeFlow.Modules.Integrations.Gmail.Application.Commands.StartGmailConnect;
 using HomeFlow.Modules.Integrations.Gmail.Application.Queries.GetCurrentGmailConnectionByHousehold;
 using HomeFlow.Modules.Integrations.Gmail.Application.Queries.ScanGmailForAppointmentSuggestions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace HomeFlow.Api.Controllers.Integrations;
 
@@ -16,19 +18,22 @@ public sealed class GmailIntegrationsController : ControllerBase
     private readonly DisconnectGmailConnectionHandler _disconnectHandler;
     private readonly GetCurrentGmailConnectionByHouseholdHandler _getCurrentHandler;
     private readonly ScanGmailForAppointmentSuggestionsHandler _scanSuggestionsHandler;
+    private readonly FrontendOptions _frontendOptions;
 
     public GmailIntegrationsController(
         StartGmailConnectHandler startHandler,
         CompleteGmailConnectHandler completeHandler,
         DisconnectGmailConnectionHandler disconnectHandler,
         GetCurrentGmailConnectionByHouseholdHandler getCurrentHandler,
-        ScanGmailForAppointmentSuggestionsHandler scanSuggestionsHandler)
+        ScanGmailForAppointmentSuggestionsHandler scanSuggestionsHandler,
+        IOptions<FrontendOptions> frontendOptions)
     {
         _startHandler = startHandler;
         _completeHandler = completeHandler;
         _disconnectHandler = disconnectHandler;
         _getCurrentHandler = getCurrentHandler;
         _scanSuggestionsHandler = scanSuggestionsHandler;
+        _frontendOptions = frontendOptions.Value;
     }
 
     [HttpPost("connect/start")]
@@ -46,21 +51,32 @@ public sealed class GmailIntegrationsController : ControllerBase
     }
 
     [HttpGet("connect/callback")]
-    public async Task<ActionResult<CompleteGmailConnectResponse>> Callback(
-        [FromQuery] string code,
-        [FromQuery] string state,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Callback(
+    [FromQuery] string code,
+    [FromQuery] string state,
+    CancellationToken cancellationToken)
     {
         try
         {
             var command = new CompleteGmailConnectCommand(code, state);
             var response = await _completeHandler.Handle(command, cancellationToken);
 
-            return Ok(response);
+            var redirectUrl =
+                $"{_frontendOptions.BaseUrl}/schedule" +
+                $"?gmailConnected=true" +
+                $"&householdId={Uri.EscapeDataString(response.HouseholdId.ToString())}" +
+                $"&gmailEmail={Uri.EscapeDataString(response.GoogleEmail)}";
+
+            return Redirect(redirectUrl);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            var redirectUrl =
+                $"{_frontendOptions.BaseUrl}/schedule" +
+                $"?gmailConnected=false" +
+                $"&error={Uri.EscapeDataString(ex.Message)}";
+
+            return Redirect(redirectUrl);
         }
     }
 

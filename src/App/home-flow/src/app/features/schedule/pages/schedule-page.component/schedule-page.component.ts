@@ -3,7 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppContextStore } from '../../../../core/context/app-context.store';
 import { ScheduleStore } from '../../data-access/schedule.store';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { GmailStore } from '../../../gmail/data-access/gmail.store';
 import { CreateAppointmentModalComponent } from '../../components/create-appointment-modal.component/create-appointment-modal.component';
 import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
@@ -17,6 +17,8 @@ import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
 export class SchedulePageComponent {
   readonly context = inject(AppContextStore);
   readonly store = inject(ScheduleStore);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly tenantIdInput = signal('');
   readonly householdIdInput = signal('');
@@ -34,6 +36,9 @@ export class SchedulePageComponent {
   readonly isCreateModalOpen = signal(false);
   readonly selectedSuggestion = signal<AppointmentSuggestion | null>(null);
 
+  readonly pageMessage = signal<string | null>(null);
+  readonly pageMessageType = signal<'success' | 'error' | null>(null);
+
   applyContext(): void {
     this.context.setTenantId(this.tenantIdInput());
     this.context.setHouseholdId(this.householdIdInput());
@@ -45,6 +50,34 @@ export class SchedulePageComponent {
         //void this.store.load(this.context.householdId());
         void this.gmailStore.loadCurrentConnection();
       }
+    });
+
+    this.route.queryParamMap.subscribe((params) => {
+      const gmailConnected = params.get('gmailConnected');
+      const error = params.get('error');
+
+      if (gmailConnected === 'true') {
+        this.pageMessage.set('Gmail was connected successfully.');
+        this.pageMessageType.set('success');
+
+        void this.gmailStore.loadCurrentConnection();
+        this.clearQueryParams();
+      }
+
+      if (gmailConnected === 'false' && error) {
+        this.pageMessage.set(error);
+        this.pageMessageType.set('error');
+
+        this.clearQueryParams();
+      }
+    });
+  }
+
+  private clearQueryParams(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
     });
   }
 
@@ -99,5 +132,10 @@ export class SchedulePageComponent {
   handleAppointmentSaved(): void {
     this.closeCreateModal();
     void this.store.load(this.context.householdId());
+  }
+
+  dismissPageMessage(): void {
+    this.pageMessage.set(null);
+    this.pageMessageType.set(null);
   }
 }
