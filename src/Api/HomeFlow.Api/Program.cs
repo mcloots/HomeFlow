@@ -2,6 +2,7 @@ using HomeFlow.BuildingBlocks.Application.Abstractions;
 using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
 using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
 using HomeFlow.BuildingBlocks.Infrastructure.Services;
+using HomeFlow.Modules.Billing.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Households.Infrastructure.DependencyInjection;
 using HomeFlow.Modules.Scheduling.Infrastructure.DependencyInjection;
 //using HomeFlow.Modules.Identity.Infrastructure.DependencyInjection;
@@ -55,6 +56,7 @@ builder.Services
     //.AddSubscriptionsModule()
     .AddHouseholdsModule()
     .AddSchedulingModule()
+    .AddBillingModule()
     .AddGmailModule(builder.Configuration);
 
 

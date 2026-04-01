@@ -8,10 +8,13 @@ import { GmailStore } from '../../../gmail/data-access/gmail.store';
 import { CreateAppointmentModalComponent } from '../../components/create-appointment-modal.component/create-appointment-modal.component';
 import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
 import { AppointmentSummary } from '../../models/schedule.models';
+import { BillEditorModalComponent } from '../../../billing/components/bill-editor-modal.component/bill-editor-modal.component';
+import { BillingStore } from '../../../billing/data-access/billing.store';
+import { BillSummary } from '../../../billing/models/bill.models';
 
 @Component({
   selector: 'app-schedule-page.component',
-  imports: [CommonModule, FormsModule, DatePipe, RouterLink, CreateAppointmentModalComponent],
+  imports: [CommonModule, FormsModule, DatePipe, RouterLink, CreateAppointmentModalComponent, BillEditorModalComponent],
   templateUrl: './schedule-page.component.html',
   styleUrl: './schedule-page.component.css',
 })
@@ -20,6 +23,7 @@ export class SchedulePageComponent {
 
   readonly context = inject(AppContextStore);
   readonly store = inject(ScheduleStore);
+  readonly billingStore = inject(BillingStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -49,18 +53,10 @@ export class SchedulePageComponent {
       year: 'numeric',
     })}`;
   });
-  readonly appointmentsByDay = computed(() => {
-    const appointmentsByDay = new Map<string, AppointmentSummary[]>();
+  readonly calendarItemsByDay = computed(() => {
+    const itemsByDay = new Map<string, CalendarItem[]>();
 
     for (const appointment of this.store.appointmentsSorted()) {
-      if (appointment.type === 'Payment') {
-        const dayKey = this.toLocalDateKey(new Date(appointment.endsAtUtc));
-        const current = appointmentsByDay.get(dayKey) ?? [];
-        current.push(appointment);
-        appointmentsByDay.set(dayKey, current);
-        continue;
-      }
-
       const startDate = this.startOfDay(new Date(appointment.startsAtUtc));
       const endDate = this.inclusiveEndDay(new Date(appointment.startsAtUtc), new Date(appointment.endsAtUtc));
 
@@ -70,13 +66,39 @@ export class SchedulePageComponent {
         currentDate = this.addDays(currentDate, 1)
       ) {
         const dayKey = this.toLocalDateKey(currentDate);
-        const current = appointmentsByDay.get(dayKey) ?? [];
-        current.push(appointment);
-        appointmentsByDay.set(dayKey, current);
+        const current = itemsByDay.get(dayKey) ?? [];
+        current.push({
+          key: `appointment-${appointment.appointmentId}`,
+          kind: 'appointment',
+          sortUtc: appointment.startsAtUtc,
+          appointment,
+        });
+        itemsByDay.set(dayKey, current);
       }
     }
 
-    return appointmentsByDay;
+    for (const bill of this.billingStore.billsSorted()) {
+      const dayKey = this.toLocalDateKey(new Date(bill.dueDateUtc));
+      const current = itemsByDay.get(dayKey) ?? [];
+      current.push({
+        key: `bill-${bill.billId}`,
+        kind: 'bill',
+        sortUtc: bill.dueDateUtc,
+        bill,
+      });
+      itemsByDay.set(dayKey, current);
+    }
+
+    for (const [dayKey, items] of itemsByDay.entries()) {
+      itemsByDay.set(
+        dayKey,
+        [...items].sort(
+          (a, b) => new Date(a.sortUtc).getTime() - new Date(b.sortUtc).getTime()
+        )
+      );
+    }
+
+    return itemsByDay;
   });
   readonly calendarDays = computed(() => {
     const monthStart = this.currentMonth();
@@ -93,7 +115,7 @@ export class SchedulePageComponent {
         dateLabel: date.getDate(),
         isCurrentMonth: date.getMonth() === monthStart.getMonth(),
         isToday: dayKey === this.todayKey,
-        appointments: this.appointmentsByDay().get(dayKey) ?? [],
+        items: this.calendarItemsByDay().get(dayKey) ?? [],
       });
     }
 
@@ -106,7 +128,9 @@ export class SchedulePageComponent {
   readonly gmailToLocalInput = signal(this.toLocalDateInputValue(this.store.toUtc()));
 
   readonly isCreateModalOpen = signal(false);
+  readonly isBillModalOpen = signal(false);
   readonly selectedSuggestion = signal<AppointmentSuggestion | null>(null);
+  readonly selectedBill = signal<BillSummary | null>(null);
 
   readonly pageMessage = signal<string | null>(null);
   readonly pageMessageType = signal<'success' | 'error' | null>(null);
@@ -123,6 +147,7 @@ export class SchedulePageComponent {
 
       if (householdId) {
         void this.loadCalendarMonth(householdId, monthStart);
+        void this.billingStore.load(householdId);
       }
     });
 
@@ -193,39 +218,33 @@ export class SchedulePageComponent {
   }
 
   useSuggestion(suggestion: AppointmentSuggestion): void {
+    this.selectedBill.set(null);
     this.selectedSuggestion.set(suggestion);
     this.isCreateModalOpen.set(true);
   }
 
+  useSuggestionForBill(suggestion: AppointmentSuggestion): void {
+    this.selectedBill.set(null);
+    this.selectedSuggestion.set(suggestion);
+    this.isBillModalOpen.set(true);
+  }
+
   getAppointmentCardClasses(appointment: AppointmentSummary): Record<string, boolean> {
-    const isPayment = appointment.type === 'Payment';
     const isDone = appointment.status === 'Done';
     const isCancelled = appointment.status === 'Cancelled';
 
     return {
       'border-slate-200 bg-slate-100/90 opacity-75': isCancelled,
       'border-emerald-200 bg-emerald-50/90': isDone,
-      'border-amber-200 bg-amber-50/90': isPayment && !isDone && !isCancelled,
-      'border-sky-200 bg-sky-50/90': !isPayment && !isDone && !isCancelled,
+      'border-sky-200 bg-sky-50/90': !isDone && !isCancelled,
     };
   }
 
-  getAppointmentMetaText(appointment: AppointmentSummary, dayKey: string): string {
-    if (appointment.type !== 'Payment') {
-      return new Date(appointment.startsAtUtc).toLocaleTimeString(undefined, {
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    }
-
-    if (this.toLocalDateKey(new Date(appointment.endsAtUtc)) === dayKey) {
-      return appointment.status === 'Done' ? 'Paid' : 'Due today';
-    }
-
-    return `Due ${new Date(appointment.endsAtUtc).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    })}`;
+  getAppointmentMetaText(appointment: AppointmentSummary): string {
+    return new Date(appointment.startsAtUtc).toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   }
 
   getAppointmentTypeLabel(appointment: AppointmentSummary): string {
@@ -249,17 +268,62 @@ export class SchedulePageComponent {
 
   closeCreateModal(): void {
     this.isCreateModalOpen.set(false);
-    this.selectedSuggestion.set(null);
   }
 
   handleAppointmentSaved(): void {
     this.closeCreateModal();
+    this.selectedSuggestion.set(null);
     const householdId = this.context.householdId();
 
     if (householdId) {
       void this.loadCalendarMonth(householdId, this.currentMonth());
     }
   }
+
+  closeBillModal(): void {
+    this.isBillModalOpen.set(false);
+    this.selectedSuggestion.set(null);
+    this.selectedBill.set(null);
+  }
+
+  async handleBillSaved(): Promise<void> {
+    this.closeBillModal();
+    const householdId = this.context.householdId();
+
+    if (householdId) {
+      await this.billingStore.load(householdId);
+    }
+  }
+
+  editBillFromCalendar(bill: BillSummary): void {
+    this.selectedSuggestion.set(null);
+    this.selectedBill.set(bill);
+    this.isCreateModalOpen.set(false);
+    this.isBillModalOpen.set(true);
+  }
+
+  getBillCardClasses(bill: BillSummary): Record<string, boolean> {
+    return {
+      'border-rose-200 bg-rose-50/90': bill.status === 'Overdue',
+      'border-emerald-200 bg-emerald-50/90': bill.status === 'Paid',
+      'border-amber-200 bg-amber-50/90': bill.status === 'Pending',
+    };
+  }
+
+  getBillMetaText(bill: BillSummary, dayKey: string): string {
+    if (dayKey === this.toLocalDateKey(new Date(bill.dueDateUtc))) {
+      return bill.status === 'Paid' ? 'Paid' : 'Due today';
+    }
+
+    return `Due ${new Date(bill.dueDateUtc).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })}`;
+  }
+
+  readonly totalCalendarItems = computed(
+    () => this.store.appointments().length + this.billingStore.bills().length
+  );
 
   dismissPageMessage(): void {
     this.pageMessage.set(null);
@@ -325,3 +389,17 @@ export class SchedulePageComponent {
     return `${year}-${month}-${day}`;
   }
 }
+
+type CalendarItem =
+  | {
+      key: string;
+      kind: 'appointment';
+      sortUtc: string;
+      appointment: AppointmentSummary;
+    }
+  | {
+      key: string;
+      kind: 'bill';
+      sortUtc: string;
+      bill: BillSummary;
+    };

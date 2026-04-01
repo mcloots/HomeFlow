@@ -5,5 +5,7 @@ namespace HomeFlow.Modules.Integrations.Gmail.Application.Abstractions;
 
 public interface IGmailSuggestionParser
 {
-    AppointmentSuggestionDto? TryParse(Message message);
+    AppointmentSuggestionDto? TryParse(
+        Message message,
+        IReadOnlyCollection<GmailAttachmentContent> attachments);
 }

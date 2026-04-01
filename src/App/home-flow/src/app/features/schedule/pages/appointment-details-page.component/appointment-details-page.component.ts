@@ -37,7 +37,7 @@ export class AppointmentDetailsPageComponent {
   }
 
   canMarkAsDone(type: string): boolean {
-    return type === 'Payment';
+    return type.length > 0;
   }
 
   getStatusClasses(status: string): Record<string, boolean> {
@@ -59,11 +59,6 @@ export class AppointmentDetailsPageComponent {
     const appointment = this.store.appointment();
 
     if (!appointment) {
-      return;
-    }
-
-    if (status === 'Done' && !this.canMarkAsDone(appointment.type)) {
-      this.actionError.set('Only payment appointments can be marked as done.');
       return;
     }
 

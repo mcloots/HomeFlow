@@ -11,8 +11,12 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
 {
     private static readonly Regex DateRegex =
         new(@"\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b", RegexOptions.Compiled);
+    private static readonly Regex AmountRegex =
+        new(@"(?:EUR|€)\s*(\d+(?:[.,]\d{1,2})?)|(\d+(?:[.,]\d{1,2})?)\s*(?:EUR|€)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public AppointmentSuggestionDto? TryParse(Message message)
+    public AppointmentSuggestionDto? TryParse(
+        Message message,
+        IReadOnlyCollection<GmailAttachmentContent> attachments)
     {
         var headers = message.Payload?.Headers ?? [];
 
@@ -23,17 +27,26 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
         var snippet = message.Snippet ?? string.Empty;
 
         var bodyText = ExtractPlainTextBody(message);
+        var normalizedBody = NormalizeWhitespace(bodyText);
+        var attachmentNames = attachments
+            .Select(x => x.FileName)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var attachmentText = NormalizeWhitespace(string.Join("\n", attachments.Select(x => x.TextContent)));
 
         var fullText =
             $"{subject}\n" +
             $"{snippet}\n" +
-            $"{bodyText}";
+            $"{normalizedBody}\n" +
+            $"{attachmentText}";
 
         var sourceDate =
             TryParseHeaderDate(dateHeader)
             ?? DateTime.UtcNow;
 
         var suggestedDate = TryExtractDate(fullText);
+        var suggestedAmount = TryExtractAmount(fullText);
 
         if (LooksLikeInvoice(subject, from, fullText))
         {
@@ -43,7 +56,11 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
                 from,
                 subject,
                 snippet,
-                suggestedDate);
+                normalizedBody,
+                attachmentNames,
+                attachmentText,
+                suggestedDate,
+                suggestedAmount);
         }
 
         if (suggestedDate is not null)
@@ -53,14 +70,21 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
                 sourceDate,
                 from,
                 subject,
+                snippet,
+                normalizedBody,
+                attachmentNames,
+                attachmentText,
                 BuildSuggestedTitle(subject, from),
                 suggestedDate.Value,
                 suggestedDate.Value.AddHours(1),
                 null,
                 AppointmentType.General.ToString(),
                 snippet,
+                suggestedAmount,
                 0.75m,
-                "Detected date in subject/snippet/body");
+                attachmentNames.Count > 0
+                    ? "Detected date using email and attachment content"
+                    : "Detected date in subject/snippet/body");
         }
 
         return null;
@@ -72,7 +96,11 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
         string from,
         string subject,
         string snippet,
-        DateTime? dueDate)
+        string body,
+        IReadOnlyCollection<string> attachmentNames,
+        string attachmentText,
+        DateTime? dueDate,
+        decimal? suggestedAmount)
     {
         var fallbackDueDate =
             sourceDate.Date
@@ -90,16 +118,25 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
             sourceDate,
             from,
             subject,
+            snippet,
+            body,
+            attachmentNames,
+            attachmentText,
             BuildSuggestedTitle(subject, from),
             paymentStartDate,
             paymentDueDate,
             null,
             AppointmentType.Payment.ToString(),
             snippet,
+            suggestedAmount,
             dueDate is null ? 0.40m : 0.80m,
             dueDate is null
-                ? "Invoice-like email detected without explicit due date"
-                : "Invoice-like email detected with due date");
+                ? attachmentNames.Count > 0
+                    ? "Invoice-like email detected with attachment content but without explicit due date"
+                    : "Invoice-like email detected without explicit due date"
+                : attachmentNames.Count > 0
+                    ? "Invoice-like email detected with due date from email or attachment"
+                    : "Invoice-like email detected with due date");
     }
 
     private static string? GetHeader(IList<MessagePartHeader> headers, string name)
@@ -128,6 +165,25 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
 
         if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dto))
             return dto.UtcDateTime;
+
+        return null;
+    }
+
+    private static decimal? TryExtractAmount(string text)
+    {
+        var match = AmountRegex.Match(text);
+
+        if (!match.Success)
+            return null;
+
+        var rawAmount = match.Groups[1].Success
+            ? match.Groups[1].Value
+            : match.Groups[2].Value;
+
+        rawAmount = rawAmount.Replace(",", ".", StringComparison.Ordinal);
+
+        if (decimal.TryParse(rawAmount, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
+            return amount;
 
         return null;
     }
@@ -229,5 +285,13 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
             html,
             "<.*?>",
             " ");
+    }
+
+    private static string NormalizeWhitespace(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        return Regex.Replace(text, @"\s+", " ").Trim();
     }
 }

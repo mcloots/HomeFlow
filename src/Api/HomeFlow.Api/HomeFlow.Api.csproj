@@ -30,6 +30,9 @@
     <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Application\HomeFlow.Modules.Integrations.Gmail.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Contracts\HomeFlow.Modules.Integrations.Gmail.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Integrations\Gmail\HomeFlow.Modules.Integrations.Gmail.Infrastructure\HomeFlow.Modules.Integrations.Gmail.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Application\HomeFlow.Modules.Billing.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Contracts\HomeFlow.Modules.Billing.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Infrastructure\HomeFlow.Modules.Billing.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Application\HomeFlow.Modules.Scheduling.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Contracts\HomeFlow.Modules.Scheduling.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Infrastructure\HomeFlow.Modules.Scheduling.Infrastructure.csproj" />

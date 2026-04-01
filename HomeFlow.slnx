@@ -1,54 +1,60 @@
 <Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Api/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Api/HomeFlow.Api/HomeFlow.Api.csproj" />
+    <Project Path="src/Api/HomeFlow.Api/HomeFlow.Api.csproj" />
   </Folder>
   <Folder Name="/src/BuildingBlocks/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/BuildingBlocks/HomeFlow.BuildingBlocks.Application/HomeFlow.BuildingBlocks.Application.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/BuildingBlocks/HomeFlow.BuildingBlocks.Domain/HomeFlow.BuildingBlocks.Domain.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/BuildingBlocks/HomeFlow.BuildingBlocks.Infrastructure/HomeFlow.BuildingBlocks.Infrastructure.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/BuildingBlocks/HomeFlow.BuildingBlocks.MultiTenancy/HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Application/HomeFlow.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Domain/HomeFlow.BuildingBlocks.Domain.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.Infrastructure/HomeFlow.BuildingBlocks.Infrastructure.csproj" />
+    <Project Path="src/BuildingBlocks/HomeFlow.BuildingBlocks.MultiTenancy/HomeFlow.BuildingBlocks.MultiTenancy.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Billing/">
+    <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Application/HomeFlow.Modules.Billing.Application.csproj" />
+    <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Contracts/HomeFlow.Modules.Billing.Contracts.csproj" />
+    <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Domain/HomeFlow.Modules.Billing.Domain.csproj" />
+    <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Infrastructure/HomeFlow.Modules.Billing.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Households/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Households/HomeFlow.Modules.Households.Application/HomeFlow.Modules.Households.Application.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Households/HomeFlow.Modules.Households.Contracts/HomeFlow.Modules.Households.Contracts.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Households/HomeFlow.Modules.Households.Domain/HomeFlow.Modules.Households.Domain.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Households/HomeFlow.Modules.Households.Infrastructure/HomeFlow.Modules.Households.Infrastructure.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Application/HomeFlow.Modules.Households.Application.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Contracts/HomeFlow.Modules.Households.Contracts.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Domain/HomeFlow.Modules.Households.Domain.csproj" />
+    <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Infrastructure/HomeFlow.Modules.Households.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Identity/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Identity/HomeFlow.Modules.Identity.Application/HomeFlow.Modules.Identity.Application.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Identity/HomeFlow.Modules.Identity.Contracts/HomeFlow.Modules.Identity.Contracts.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Identity/HomeFlow.Modules.Identity.Domain/HomeFlow.Modules.Identity.Domain.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Identity/HomeFlow.Modules.Identity.Infrastructure/HomeFlow.Modules.Identity.Infrastructure.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Application/HomeFlow.Modules.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Contracts/HomeFlow.Modules.Identity.Contracts.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Domain/HomeFlow.Modules.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/HomeFlow.Modules.Identity.Infrastructure/HomeFlow.Modules.Identity.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Integrations/" />
   <Folder Name="/src/Modules/Integrations/Gmail/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Application/HomeFlow.Modules.Integrations.Gmail.Application.csproj" Id="5920e78b-8db9-42c0-9efa-90d591dd88e8" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Contracts/HomeFlow.Modules.Integrations.Gmail.Contracts.csproj" Id="bfd9a9d8-8eba-4f71-8646-0e94e798e418" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Domain/HomeFlow.Modules.Integrations.Gmail.Domain.csproj" Id="dbbdeb37-7c62-4957-a356-cc5fce649c19" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Infrastructure/HomeFlow.Modules.Integrations.Gmail.Infrastructure.csproj" Id="8435fd04-516e-42b9-9fe7-109bbcb05f9a" />
+    <Project Path="src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Application/HomeFlow.Modules.Integrations.Gmail.Application.csproj" Id="5920e78b-8db9-42c0-9efa-90d591dd88e8" />
+    <Project Path="src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Contracts/HomeFlow.Modules.Integrations.Gmail.Contracts.csproj" Id="bfd9a9d8-8eba-4f71-8646-0e94e798e418" />
+    <Project Path="src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Domain/HomeFlow.Modules.Integrations.Gmail.Domain.csproj" Id="dbbdeb37-7c62-4957-a356-cc5fce649c19" />
+    <Project Path="src/Modules/Integrations/Gmail/HomeFlow.Modules.Integrations.Gmail.Infrastructure/HomeFlow.Modules.Integrations.Gmail.Infrastructure.csproj" Id="8435fd04-516e-42b9-9fe7-109bbcb05f9a" />
   </Folder>
   <Folder Name="/src/Modules/Scheduling/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Application/HomeFlow.Modules.Scheduling.Application.csproj" Id="14145a2f-26b5-496e-80fe-bc88f0f01163" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Contracts/HomeFlow.Modules.Scheduling.Contracts.csproj" Id="57e74c5d-33bb-43c2-a83d-6ce0928c5462" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Domain/HomeFlow.Modules.Scheduling.Domain.csproj" Id="b38de3e9-e0ab-47d4-ac3e-bdd3457e87c4" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Infrastructure/HomeFlow.Modules.Scheduling.Infrastructure.csproj" Id="da7836fe-2bf4-43bc-b061-29897ba50dc9" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Application/HomeFlow.Modules.Scheduling.Application.csproj" Id="14145a2f-26b5-496e-80fe-bc88f0f01163" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Contracts/HomeFlow.Modules.Scheduling.Contracts.csproj" Id="57e74c5d-33bb-43c2-a83d-6ce0928c5462" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Domain/HomeFlow.Modules.Scheduling.Domain.csproj" Id="b38de3e9-e0ab-47d4-ac3e-bdd3457e87c4" />
+    <Project Path="src/Modules/Scheduling/HomeFlow.Modules.Scheduling.Infrastructure/HomeFlow.Modules.Scheduling.Infrastructure.csproj" Id="da7836fe-2bf4-43bc-b061-29897ba50dc9" />
   </Folder>
   <Folder Name="/src/Modules/Subscriptions/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Application/HomeFlow.Modules.Subscriptions.Application.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Contracts/HomeFlow.Modules.Subscriptions.Contracts.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Domain/HomeFlow.Modules.Subscriptions.Domain.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Infrastructure/HomeFlow.Modules.Subscriptions.Infrastructure.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Application/HomeFlow.Modules.Subscriptions.Application.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Contracts/HomeFlow.Modules.Subscriptions.Contracts.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Domain/HomeFlow.Modules.Subscriptions.Domain.csproj" />
+    <Project Path="src/Modules/Subscriptions/HomeFlow.Modules.Subscriptions.Infrastructure/HomeFlow.Modules.Subscriptions.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Tenancy/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Application/HomeFlow.Modules.Tenancy.Application.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Contracts/HomeFlow.Modules.Tenancy.Contracts.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Domain/HomeFlow.Modules.Tenancy.Domain.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Infrastructure/HomeFlow.Modules.Tenancy.Infrastructure.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Application/HomeFlow.Modules.Tenancy.Application.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Contracts/HomeFlow.Modules.Tenancy.Contracts.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Domain/HomeFlow.Modules.Tenancy.Domain.csproj" />
+    <Project Path="src/Modules/Tenancy/HomeFlow.Modules.Tenancy.Infrastructure/HomeFlow.Modules.Tenancy.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/tests/HomeFlow.ArchitectureTests/HomeFlow.ArchitectureTests.csproj" />
-    <Project Path="../../../../../../../../TM/DDD/HomeFlow/tests/HomeFlow.UnitTests/HomeFlow.UnitTests.csproj" />
+    <Project Path="tests/HomeFlow.ArchitectureTests/HomeFlow.ArchitectureTests.csproj" />
+    <Project Path="tests/HomeFlow.UnitTests/HomeFlow.UnitTests.csproj" />
   </Folder>
 </Solution>

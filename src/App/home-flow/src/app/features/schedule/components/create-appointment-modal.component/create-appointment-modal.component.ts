@@ -23,6 +23,12 @@ import { CreateAppointmentRequest } from '../../models/create-appointment.models
 import { HouseholdMemberListItem } from '../../models/household-member.models';
 
 export interface AppointmentSuggestionInput {
+  sender: string;
+  subject: string;
+  sourceSnippet: string;
+  sourceBody: string;
+  sourceAttachmentNames: string[];
+  sourceAttachmentText: string;
   suggestedTitle: string;
   suggestedStartsAtUtc: string | null;
   suggestedEndsAtUtc: string | null;
@@ -70,14 +76,26 @@ export class CreateAppointmentModalComponent {
   readonly membersError = signal<string | null>(null);
   readonly availableMembers = signal<HouseholdMemberListItem[]>([]);
   readonly isOpenValue = this.isOpenState.asReadonly();
-  readonly appointmentTypes = ['General', 'Payment'];
   readonly durationDays = signal(30);
+  readonly sourcePreview = computed(() => {
+    const suggestion = this.suggestionState();
+
+    if (!suggestion) {
+      return null;
+    }
+
+    return {
+      sender: suggestion.sender,
+      subject: suggestion.subject,
+      snippet: suggestion.sourceSnippet,
+      body: suggestion.sourceBody,
+      attachmentNames: suggestion.sourceAttachmentNames,
+      attachmentText: suggestion.sourceAttachmentText,
+    };
+  });
 
   readonly contextReady = computed(
     () => this.context.hasTenantId() && this.context.hasHouseholdId()
-  );
-  readonly isPaymentTypeSelected = computed(
-    () => this.form.controls.type.getRawValue() === 'Payment'
   );
 
   readonly selectedMembers = computed(() => {
@@ -92,7 +110,6 @@ export class CreateAppointmentModalComponent {
     startsAtLocal: ['', [Validators.required]],
     endsAtLocal: ['', [Validators.required]],
     location: [''],
-    type: ['General', [Validators.required]],
     participantMemberIds: this.fb.nonNullable.control<string[]>([]),
   });
 
@@ -123,7 +140,6 @@ export class CreateAppointmentModalComponent {
         startsAtLocal: '',
         endsAtLocal: '',
         location: '',
-        type: 'General',
         participantMemberIds: [],
       });
       this.error.set(null);
@@ -136,7 +152,6 @@ export class CreateAppointmentModalComponent {
       startsAtLocal: this.toLocalDateTimeInputValue(suggestion.suggestedStartsAtUtc),
       endsAtLocal: this.toLocalDateTimeInputValue(suggestion.suggestedEndsAtUtc),
       location: suggestion.suggestedLocation ?? '',
-      type: suggestion.suggestedType ?? 'General',
       participantMemberIds: [],
     });
 
@@ -227,7 +242,7 @@ export class CreateAppointmentModalComponent {
       startsAtUtc: new Date(raw.startsAtLocal).toISOString(),
       endsAtUtc: new Date(raw.endsAtLocal).toISOString(),
       location: raw.location.trim() || null,
-      type: raw.type,
+      type: 'General',
       participantMemberIds: raw.participantMemberIds,
     };
 
