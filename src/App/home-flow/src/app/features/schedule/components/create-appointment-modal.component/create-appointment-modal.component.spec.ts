@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { AppContextStore } from '../../../../core/context/app-context.store';
 import { AppointmentApiService } from '../../data-access/appointment-api.service';
+import { HouseholdMembersApiService } from '../../data-access/household-members-api.service';
 import { CreateAppointmentModalComponent } from './create-appointment-modal.component';
 
 describe('CreateAppointmentModalComponent', () => {
@@ -16,6 +17,16 @@ describe('CreateAppointmentModalComponent', () => {
           provide: AppointmentApiService,
           useValue: {
             createAppointment: () => of({}),
+          },
+        },
+        {
+          provide: HouseholdMembersApiService,
+          useValue: {
+            getHouseholdMembers: () =>
+              of({
+                householdId: 'household-id',
+                members: [],
+              }),
           },
         },
         {

@@ -5,17 +5,22 @@ import {
   Input,
   Output,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
 import {
   FormBuilder,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { AppointmentApiService } from '../../data-access/appointment-api.service';
+import { firstValueFrom } from 'rxjs';
 import { AppContextStore } from '../../../../core/context/app-context.store';
+import { AppointmentApiService } from '../../data-access/appointment-api.service';
+import { HouseholdMembersApiService } from '../../data-access/household-members-api.service';
 import { CreateAppointmentRequest } from '../../models/create-appointment.models';
+import { HouseholdMemberListItem } from '../../models/household-member.models';
 
 export interface AppointmentSuggestionInput {
   suggestedTitle: string;
@@ -28,13 +33,14 @@ export interface AppointmentSuggestionInput {
 
 @Component({
   selector: 'app-create-appointment-modal',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './create-appointment-modal.component.html',
   styleUrl: './create-appointment-modal.component.css',
 })
 export class CreateAppointmentModalComponent {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(AppointmentApiService);
+  private readonly membersApi = inject(HouseholdMembersApiService);
   private readonly context = inject(AppContextStore);
 
   private readonly isOpenState = signal(false);
@@ -60,12 +66,25 @@ export class CreateAppointmentModalComponent {
 
   readonly isSaving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly isLoadingMembers = signal(false);
+  readonly membersError = signal<string | null>(null);
+  readonly availableMembers = signal<HouseholdMemberListItem[]>([]);
   readonly isOpenValue = this.isOpenState.asReadonly();
   readonly appointmentTypes = ['General', 'Payment'];
+  readonly durationDays = signal(30);
 
   readonly contextReady = computed(
     () => this.context.hasTenantId() && this.context.hasHouseholdId()
   );
+  readonly isPaymentTypeSelected = computed(
+    () => this.form.controls.type.getRawValue() === 'Payment'
+  );
+
+  readonly selectedMembers = computed(() => {
+    const selectedIds = new Set(this.form.controls.participantMemberIds.getRawValue());
+
+    return this.availableMembers().filter((member) => selectedIds.has(member.memberId));
+  });
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
@@ -74,8 +93,21 @@ export class CreateAppointmentModalComponent {
     endsAtLocal: ['', [Validators.required]],
     location: [''],
     type: ['General', [Validators.required]],
-    participantMemberIds: [''],
+    participantMemberIds: this.fb.nonNullable.control<string[]>([]),
   });
+
+  constructor() {
+    effect(() => {
+      const isOpen = this.isOpenValue();
+      const householdId = this.context.householdId();
+
+      if (!isOpen || !householdId) {
+        return;
+      }
+
+      void this.loadMembers(householdId);
+    });
+  }
 
   private applySuggestion(): void {
     const suggestion = this.suggestionState();
@@ -92,7 +124,7 @@ export class CreateAppointmentModalComponent {
         endsAtLocal: '',
         location: '',
         type: 'General',
-        participantMemberIds: '',
+        participantMemberIds: [],
       });
       this.error.set(null);
       return;
@@ -105,9 +137,65 @@ export class CreateAppointmentModalComponent {
       endsAtLocal: this.toLocalDateTimeInputValue(suggestion.suggestedEndsAtUtc),
       location: suggestion.suggestedLocation ?? '',
       type: suggestion.suggestedType ?? 'General',
-      participantMemberIds: '',
+      participantMemberIds: [],
     });
 
+    this.error.set(null);
+  }
+
+  async refreshMembers(): Promise<void> {
+    const householdId = this.context.householdId();
+
+    if (!householdId) {
+      return;
+    }
+
+    await this.loadMembers(householdId);
+  }
+
+  isParticipantSelected(memberId: string): boolean {
+    return this.form.controls.participantMemberIds.getRawValue().includes(memberId);
+  }
+
+  toggleParticipantSelection(memberId: string): void {
+    const current = this.form.controls.participantMemberIds.getRawValue();
+
+    if (current.includes(memberId)) {
+      this.form.controls.participantMemberIds.setValue(
+        current.filter((id) => id !== memberId)
+      );
+
+      return;
+    }
+
+    this.form.controls.participantMemberIds.setValue([...current, memberId]);
+  }
+
+  clearParticipantSelection(): void {
+    this.form.controls.participantMemberIds.setValue([]);
+  }
+
+  applyDurationDays(daysToAdd: number = this.durationDays()): void {
+    const startsAtLocal = this.form.controls.startsAtLocal.getRawValue();
+
+    if (!startsAtLocal) {
+      this.error.set('Choose a start date first.');
+      return;
+    }
+
+    const startDate = new Date(startsAtLocal);
+
+    if (Number.isNaN(startDate.getTime())) {
+      this.error.set('Start date is invalid.');
+      return;
+    }
+
+    const safeDaysToAdd = Math.max(0, Math.floor(daysToAdd));
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + safeDaysToAdd);
+
+    this.form.controls.endsAtLocal.setValue(this.toLocalDateTimeInputValue(endDate.toISOString()));
+    this.durationDays.set(safeDaysToAdd);
     this.error.set(null);
   }
 
@@ -131,11 +219,6 @@ export class CreateAppointmentModalComponent {
 
     const raw = this.form.getRawValue();
 
-    const participantMemberIds = raw.participantMemberIds
-      .split(',')
-      .map((x) => x.trim())
-      .filter((x) => x.length > 0);
-
     const request: CreateAppointmentRequest = {
       tenantId,
       householdId,
@@ -145,7 +228,7 @@ export class CreateAppointmentModalComponent {
       endsAtUtc: new Date(raw.endsAtLocal).toISOString(),
       location: raw.location.trim() || null,
       type: raw.type,
-      participantMemberIds,
+      participantMemberIds: raw.participantMemberIds,
     };
 
     this.isSaving.set(true);
@@ -162,6 +245,34 @@ export class CreateAppointmentModalComponent {
         this.isSaving.set(false);
       },
     });
+  }
+
+  private async loadMembers(householdId: string): Promise<void> {
+    this.isLoadingMembers.set(true);
+    this.membersError.set(null);
+
+    try {
+      const response = await firstValueFrom(
+        this.membersApi.getHouseholdMembers(householdId)
+      );
+
+      this.availableMembers.set(response.members);
+
+      const selectedIds = new Set(this.form.controls.participantMemberIds.getRawValue());
+      const validSelectedIds = response.members
+        .filter((member) => selectedIds.has(member.memberId))
+        .map((member) => member.memberId);
+
+      if (validSelectedIds.length !== selectedIds.size) {
+        this.form.controls.participantMemberIds.setValue(validSelectedIds);
+      }
+    } catch (error) {
+      console.error(error);
+      this.availableMembers.set([]);
+      this.membersError.set('Failed to load household members.');
+    } finally {
+      this.isLoadingMembers.set(false);
+    }
   }
 
   private toLocalDateTimeInputValue(utcIso: string | null): string {

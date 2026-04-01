@@ -1,4 +1,5 @@
-﻿using HomeFlow.Modules.Households.Application.Queries.GetHouseholdDetails;
+using HomeFlow.Modules.Households.Application.Queries.GetHouseholdDetails;
+using HomeFlow.Modules.Households.Application.Queries.GetHouseholdMembers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeFlow.Api.Controllers.Households;
@@ -8,10 +9,14 @@ namespace HomeFlow.Api.Controllers.Households;
 public sealed class HouseholdsController : ControllerBase
 {
     private readonly GetHouseholdDetailsHandler _getHouseholdDetailsHandler;
+    private readonly GetHouseholdMembersHandler _getHouseholdMembersHandler;
 
-    public HouseholdsController(GetHouseholdDetailsHandler getHouseholdDetailsHandler)
+    public HouseholdsController(
+        GetHouseholdDetailsHandler getHouseholdDetailsHandler,
+        GetHouseholdMembersHandler getHouseholdMembersHandler)
     {
         _getHouseholdDetailsHandler = getHouseholdDetailsHandler;
+        _getHouseholdMembersHandler = getHouseholdMembersHandler;
     }
 
     [HttpGet("{householdId:guid}")]
@@ -24,6 +29,25 @@ public sealed class HouseholdsController : ControllerBase
         {
             var query = new GetHouseholdDetailsQuery(householdId);
             var response = await _getHouseholdDetailsHandler.Handle(query, cancellationToken);
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("{householdId:guid}/members")]
+    [ProducesResponseType(typeof(GetHouseholdMembersResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<GetHouseholdMembersResponse>> GetMembers(
+        [FromRoute] Guid householdId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var query = new GetHouseholdMembersQuery(householdId);
+            var response = await _getHouseholdMembersHandler.Handle(query, cancellationToken);
 
             return Ok(response);
         }

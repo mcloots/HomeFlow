@@ -1,6 +1,7 @@
-﻿using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
+using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
 using HomeFlow.Modules.Households.Application.Abstractions;
 using HomeFlow.Modules.Households.Application.Queries.GetHouseholdDetails;
+using HomeFlow.Modules.Households.Application.Queries.GetHouseholdMembers;
 using HomeFlow.Modules.Households.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,6 +53,31 @@ public sealed class HouseholdReadRepository : IHouseholdReadRepository
                     i.Role.ToString(),
                     i.Status.ToString(),
                     i.CreatedAtUtc))
+                .ToList());
+    }
+
+    public async Task<GetHouseholdMembersResponse?> GetMembersByHouseholdIdAsync(
+        Guid householdId,
+        CancellationToken cancellationToken = default)
+    {
+        var householdTypedId = new HomeFlow.Modules.Households.Domain.Ids.HouseholdId(householdId);
+
+        var household = await _dbContext.Households
+            .Include(x => x.Members)
+            .SingleOrDefaultAsync(x => x.Id == householdTypedId, cancellationToken);
+
+        if (household is null)
+            return null;
+
+        return new GetHouseholdMembersResponse(
+            household.Id.Value,
+            household.Members
+                .OrderBy(m => m.DisplayName)
+                .Select(m => new HouseholdMemberListItemDto(
+                    m.Id.Value,
+                    m.DisplayName,
+                    m.Email,
+                    m.Role.ToString()))
                 .ToList());
     }
 }

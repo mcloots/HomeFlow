@@ -36,6 +36,10 @@ export class AppointmentDetailsPageComponent {
     void this.updateStatus('Scheduled');
   }
 
+  canMarkAsDone(type: string): boolean {
+    return type === 'Payment';
+  }
+
   getStatusClasses(status: string): Record<string, boolean> {
     return {
       'bg-blue-100 text-blue-700': status === 'Scheduled',
@@ -55,6 +59,11 @@ export class AppointmentDetailsPageComponent {
     const appointment = this.store.appointment();
 
     if (!appointment) {
+      return;
+    }
+
+    if (status === 'Done' && !this.canMarkAsDone(appointment.type)) {
+      this.actionError.set('Only payment appointments can be marked as done.');
       return;
     }
 
