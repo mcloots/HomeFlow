@@ -6,5 +6,6 @@ public sealed record AppointmentSummaryDto(
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
     string? Location,
+    string Type,
     string Status,
     IReadOnlyCollection<AppointmentParticipantDto> Participants);

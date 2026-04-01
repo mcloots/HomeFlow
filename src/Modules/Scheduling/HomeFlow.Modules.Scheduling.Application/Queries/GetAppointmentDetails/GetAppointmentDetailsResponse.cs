@@ -9,5 +9,6 @@ public sealed record GetAppointmentDetailsResponse(
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
     string? Location,
+    string Type,
     string Status,
     IReadOnlyCollection<AppointmentDetailsParticipantDto> Participants);

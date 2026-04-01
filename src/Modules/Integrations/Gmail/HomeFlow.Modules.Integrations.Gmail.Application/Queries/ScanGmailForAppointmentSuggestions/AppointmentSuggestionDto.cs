@@ -9,6 +9,7 @@ public sealed record AppointmentSuggestionDto(
     DateTime? SuggestedStartsAtUtc,
     DateTime? SuggestedEndsAtUtc,
     string? SuggestedLocation,
+    string SuggestedType,
     string? SuggestedDescription,
     decimal Confidence,
     string Reason);

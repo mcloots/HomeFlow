@@ -5,4 +5,5 @@ public sealed record UpdateAppointmentResponse(
     string Title,
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
-    string Status);
+    string Status,
+    string Type);

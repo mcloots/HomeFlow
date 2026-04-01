@@ -9,6 +9,7 @@ export interface AppointmentSummary {
   startsAtUtc: string;
   endsAtUtc: string;
   location?: string | null;
+  type: string;
   status: string;
   participants: AppointmentParticipant[];
 }

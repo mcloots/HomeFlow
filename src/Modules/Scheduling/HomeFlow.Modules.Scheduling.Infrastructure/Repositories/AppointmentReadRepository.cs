@@ -55,6 +55,7 @@ public sealed class AppointmentReadRepository : IAppointmentReadRepository
                     a.StartsAtUtc,
                     a.EndsAtUtc,
                     a.Location,
+                    a.Type.ToString(),
                     a.Status.ToString(),
                     a.Participants
                         .Select(p =>
@@ -105,6 +106,7 @@ public sealed class AppointmentReadRepository : IAppointmentReadRepository
             appointment.StartsAtUtc,
             appointment.EndsAtUtc,
             appointment.Location,
+            appointment.Type.ToString(),
             appointment.Status.ToString(),
             appointment.Participants
                 .Select(p => new AppointmentDetailsParticipantDto(

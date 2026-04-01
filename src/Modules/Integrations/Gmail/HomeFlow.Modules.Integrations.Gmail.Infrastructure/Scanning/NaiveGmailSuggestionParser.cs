@@ -1,6 +1,7 @@
-﻿using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Gmail.v1.Data;
 using HomeFlow.Modules.Integrations.Gmail.Application.Abstractions;
 using HomeFlow.Modules.Integrations.Gmail.Application.Queries.ScanGmailForAppointmentSuggestions;
+using HomeFlow.Modules.Scheduling.Domain.Enums;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -34,6 +35,17 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
 
         var suggestedDate = TryExtractDate(fullText);
 
+        if (LooksLikeInvoice(subject, from, fullText))
+        {
+            return BuildPaymentSuggestion(
+                message,
+                sourceDate,
+                from,
+                subject,
+                snippet,
+                suggestedDate);
+        }
+
         if (suggestedDate is not null)
         {
             return new AppointmentSuggestionDto(
@@ -45,33 +57,49 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
                 suggestedDate.Value,
                 suggestedDate.Value.AddHours(1),
                 null,
+                AppointmentType.General.ToString(),
                 snippet,
                 0.75m,
                 "Detected date in subject/snippet/body");
         }
 
-        if (LooksLikeInvoice(subject, from, fullText))
-        {
-            var fallbackDate =
-                sourceDate.Date
-                    .AddDays(1)
-                    .AddHours(9);
-
-            return new AppointmentSuggestionDto(
-                message.Id ?? string.Empty,
-                sourceDate,
-                from,
-                subject,
-                BuildSuggestedTitle(subject, from),
-                fallbackDate,
-                fallbackDate.AddMinutes(15),
-                null,
-                snippet,
-                0.40m,
-                "Invoice-like email detected without explicit due date");
-        }
-
         return null;
+    }
+
+    private static AppointmentSuggestionDto BuildPaymentSuggestion(
+        Message message,
+        DateTime sourceDate,
+        string from,
+        string subject,
+        string snippet,
+        DateTime? dueDate)
+    {
+        var fallbackDueDate =
+            sourceDate.Date
+                .AddDays(1)
+                .AddHours(9);
+
+        var paymentDueDate = dueDate ?? fallbackDueDate;
+        var paymentStartDate = sourceDate.Date.AddHours(9);
+
+        if (paymentDueDate <= paymentStartDate)
+            paymentStartDate = paymentDueDate.AddMinutes(-15);
+
+        return new AppointmentSuggestionDto(
+            message.Id ?? string.Empty,
+            sourceDate,
+            from,
+            subject,
+            BuildSuggestedTitle(subject, from),
+            paymentStartDate,
+            paymentDueDate,
+            null,
+            AppointmentType.Payment.ToString(),
+            snippet,
+            dueDate is null ? 0.40m : 0.80m,
+            dueDate is null
+                ? "Invoice-like email detected without explicit due date"
+                : "Invoice-like email detected with due date");
     }
 
     private static string? GetHeader(IList<MessagePartHeader> headers, string name)
@@ -197,7 +225,7 @@ public sealed class NaiveGmailSuggestionParser : IGmailSuggestionParser
         if (string.IsNullOrWhiteSpace(html))
             return string.Empty;
 
-        return System.Text.RegularExpressions.Regex.Replace(
+        return Regex.Replace(
             html,
             "<.*?>",
             " ");

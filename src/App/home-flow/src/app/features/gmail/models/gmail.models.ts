@@ -16,6 +16,7 @@ export interface AppointmentSuggestion {
   suggestedStartsAtUtc: string | null;
   suggestedEndsAtUtc: string | null;
   suggestedLocation: string | null;
+  suggestedType: string;
   suggestedDescription: string | null;
   confidence: number;
   reason: string;

@@ -1,6 +1,7 @@
-﻿using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
+using HomeFlow.BuildingBlocks.Application.Abstractions.Persistence;
 using HomeFlow.Modules.Households.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Application.Abstractions;
+using HomeFlow.Modules.Scheduling.Domain.Enums;
 using HomeFlow.Modules.Scheduling.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Domain.Repositories;
 
@@ -48,6 +49,9 @@ public sealed class UpdateAppointmentHandler
         if (!allParticipantsBelongToHousehold)
             throw new InvalidOperationException("One or more participants do not belong to the household.");
 
+        var appointmentType = ParseAppointmentType(command.Type, appointment.Type);
+        var appointmentStatus = ParseAppointmentStatus(command.Status, appointment.Status);
+
         appointment.UpdateDetails(
             command.Title,
             command.Description,
@@ -56,6 +60,8 @@ public sealed class UpdateAppointmentHandler
             command.Location);
 
         appointment.ReplaceParticipants(participantIds);
+        appointment.SetType(appointmentType);
+        appointment.SetStatus(appointmentStatus);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -64,6 +70,35 @@ public sealed class UpdateAppointmentHandler
             appointment.Title,
             appointment.StartsAtUtc,
             appointment.EndsAtUtc,
-            appointment.Status.ToString());
+            appointment.Status.ToString(),
+            appointment.Type.ToString());
+    }
+
+    private static AppointmentType ParseAppointmentType(string? value, AppointmentType fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return fallback;
+
+        if (Enum.TryParse<AppointmentType>(value, true, out var appointmentType) &&
+            Enum.IsDefined(appointmentType))
+        {
+            return appointmentType;
+        }
+
+        throw new InvalidOperationException("Appointment type is invalid.");
+    }
+
+    private static AppointmentStatus ParseAppointmentStatus(string? value, AppointmentStatus fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return fallback;
+
+        if (Enum.TryParse<AppointmentStatus>(value, true, out var appointmentStatus) &&
+            Enum.IsDefined(appointmentStatus))
+        {
+            return appointmentStatus;
+        }
+
+        throw new InvalidOperationException("Appointment status is invalid.");
     }
 }

@@ -3,5 +3,6 @@
 public enum AppointmentStatus
 {
     Scheduled = 1,
-    Cancelled = 2
+    Cancelled = 2,
+    Done = 3
 }

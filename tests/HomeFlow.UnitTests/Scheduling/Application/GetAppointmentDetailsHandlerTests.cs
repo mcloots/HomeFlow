@@ -22,6 +22,7 @@ public sealed class GetAppointmentDetailsHandlerTests
             new DateTime(2026, 3, 30, 8, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 3, 30, 9, 0, 0, DateTimeKind.Utc),
             "Clinic",
+            "General",
             "Scheduled",
             new[]
             {

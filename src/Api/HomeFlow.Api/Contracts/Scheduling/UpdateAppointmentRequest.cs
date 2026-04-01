@@ -6,4 +6,6 @@ public sealed record UpdateAppointmentRequest(
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
     string? Location,
+    string? Type,
+    string? Status,
     IReadOnlyCollection<Guid> ParticipantMemberIds);

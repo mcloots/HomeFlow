@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RuntimeConfigService } from '../../../core/config/runtime-config.service';
 import { CreateAppointmentRequest } from '../models/create-appointment.models';
+import { UpdateAppointmentRequest } from '../models/update-appointment.models';
 
 export interface CreateAppointmentResponse {
   appointmentId: string;
@@ -12,6 +13,16 @@ export interface CreateAppointmentResponse {
   startsAtUtc: string;
   endsAtUtc: string;
   status: string;
+  type: string;
+}
+
+export interface UpdateAppointmentResponse {
+  appointmentId: string;
+  title: string;
+  startsAtUtc: string;
+  endsAtUtc: string;
+  status: string;
+  type: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +41,16 @@ export class AppointmentApiService {
   ): Observable<CreateAppointmentResponse> {
     return this.http.post<CreateAppointmentResponse>(
       `${this.baseUrl}/appointments`,
+      request
+    );
+  }
+
+  updateAppointment(
+    appointmentId: string,
+    request: UpdateAppointmentRequest
+  ): Observable<UpdateAppointmentResponse> {
+    return this.http.put<UpdateAppointmentResponse>(
+      `${this.baseUrl}/appointments/${appointmentId}`,
       request
     );
   }

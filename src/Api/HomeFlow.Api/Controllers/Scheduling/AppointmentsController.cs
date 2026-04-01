@@ -44,6 +44,7 @@ public sealed class AppointmentsController : ControllerBase
                 request.StartsAtUtc,
                 request.EndsAtUtc,
                 request.Location,
+                request.Type,
                 request.ParticipantMemberIds);
 
             var response = await _createAppointmentHandler.Handle(command, cancellationToken);
@@ -116,6 +117,8 @@ public sealed class AppointmentsController : ControllerBase
                 request.StartsAtUtc,
                 request.EndsAtUtc,
                 request.Location,
+                request.Type,
+                request.Status,
                 request.ParticipantMemberIds);
 
             var response = await _updateAppointmentHandler.Handle(command, cancellationToken);

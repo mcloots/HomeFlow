@@ -7,6 +7,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { GmailStore } from '../../../gmail/data-access/gmail.store';
 import { CreateAppointmentModalComponent } from '../../components/create-appointment-modal.component/create-appointment-modal.component';
 import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
+import { AppointmentSummary } from '../../models/schedule.models';
 
 @Component({
   selector: 'app-schedule-page.component',
@@ -15,6 +16,8 @@ import { AppointmentSuggestion } from '../../../gmail/models/gmail.models';
   styleUrl: './schedule-page.component.css',
 })
 export class SchedulePageComponent {
+  private static readonly calendarDayCount = 42;
+
   readonly context = inject(AppContextStore);
   readonly store = inject(ScheduleStore);
   private readonly route = inject(ActivatedRoute);
@@ -23,15 +26,84 @@ export class SchedulePageComponent {
   readonly tenantIdInput = signal('');
   readonly householdIdInput = signal('');
 
-  readonly fromLocalInput = signal(this.toLocalDateTimeInputValue(this.store.fromUtc()));
-  readonly toLocalInput = signal(this.toLocalDateTimeInputValue(this.store.toUtc()));
-
   readonly canLoad = computed(() => this.context.hasHouseholdId());
+  readonly todayKey = this.toLocalDateKey(new Date());
+  readonly weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  readonly currentMonth = signal(this.startOfMonth(new Date()));
+  readonly currentMonthLabel = computed(() =>
+    this.currentMonth().toLocaleDateString(undefined, {
+      month: 'long',
+      year: 'numeric',
+    })
+  );
+  readonly currentMonthRangeLabel = computed(() => {
+    const monthStart = this.currentMonth();
+    const monthEnd = this.endOfMonth(monthStart);
+
+    return `${monthStart.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })} - ${monthEnd.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })}`;
+  });
+  readonly appointmentsByDay = computed(() => {
+    const appointmentsByDay = new Map<string, AppointmentSummary[]>();
+
+    for (const appointment of this.store.appointmentsSorted()) {
+      if (appointment.type === 'Payment') {
+        const dayKey = this.toLocalDateKey(new Date(appointment.endsAtUtc));
+        const current = appointmentsByDay.get(dayKey) ?? [];
+        current.push(appointment);
+        appointmentsByDay.set(dayKey, current);
+        continue;
+      }
+
+      const startDate = this.startOfDay(new Date(appointment.startsAtUtc));
+      const endDate = this.inclusiveEndDay(new Date(appointment.startsAtUtc), new Date(appointment.endsAtUtc));
+
+      for (
+        let currentDate = startDate;
+        currentDate.getTime() <= endDate.getTime();
+        currentDate = this.addDays(currentDate, 1)
+      ) {
+        const dayKey = this.toLocalDateKey(currentDate);
+        const current = appointmentsByDay.get(dayKey) ?? [];
+        current.push(appointment);
+        appointmentsByDay.set(dayKey, current);
+      }
+    }
+
+    return appointmentsByDay;
+  });
+  readonly calendarDays = computed(() => {
+    const monthStart = this.currentMonth();
+    const gridStart = this.startOfCalendarGrid(monthStart);
+    const days = [];
+
+    for (let index = 0; index < SchedulePageComponent.calendarDayCount; index += 1) {
+      const date = this.addDays(gridStart, index);
+      const dayKey = this.toLocalDateKey(date);
+
+      days.push({
+        key: dayKey,
+        date,
+        dateLabel: date.getDate(),
+        isCurrentMonth: date.getMonth() === monthStart.getMonth(),
+        isToday: dayKey === this.todayKey,
+        appointments: this.appointmentsByDay().get(dayKey) ?? [],
+      });
+    }
+
+    return days;
+  });
 
   readonly gmailStore = inject(GmailStore);
 
-  readonly gmailFromLocalInput = signal(this.toLocalDateTimeInputValue(this.store.fromUtc()));
-  readonly gmailToLocalInput = signal(this.toLocalDateTimeInputValue(this.store.toUtc()));
+  readonly gmailFromLocalInput = signal(this.toLocalDateInputValue(this.store.fromUtc()));
+  readonly gmailToLocalInput = signal(this.toLocalDateInputValue(this.store.toUtc()));
 
   readonly isCreateModalOpen = signal(false);
   readonly selectedSuggestion = signal<AppointmentSuggestion | null>(null);
@@ -46,8 +118,16 @@ export class SchedulePageComponent {
 
   constructor() {
     effect(() => {
+      const householdId = this.context.householdId();
+      const monthStart = this.currentMonth();
+
+      if (householdId) {
+        void this.loadCalendarMonth(householdId, monthStart);
+      }
+    });
+
+    effect(() => {
       if (this.context.hasHouseholdId()) {
-        //void this.store.load(this.context.householdId());
         void this.gmailStore.loadCurrentConnection();
       }
     });
@@ -81,27 +161,35 @@ export class SchedulePageComponent {
     });
   }
 
-  loadSchedule(): void {
-    const fromUtc = this.localDateTimeInputToUtcIso(this.fromLocalInput());
-    const toUtc = this.localDateTimeInputToUtcIso(this.toLocalInput());
-
-    this.store.setDateRange(fromUtc, toUtc);
-    void this.store.load(this.context.householdId());
+  previousMonth(): void {
+    this.currentMonth.set(this.addMonths(this.currentMonth(), -1));
   }
 
-  private toLocalDateTimeInputValue(utcIso: string): string {
+  nextMonth(): void {
+    this.currentMonth.set(this.addMonths(this.currentMonth(), 1));
+  }
+
+  goToCurrentMonth(): void {
+    this.currentMonth.set(this.startOfMonth(new Date()));
+  }
+
+  private toLocalDateInputValue(utcIso: string): string {
     const date = new Date(utcIso);
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
-    const hours = `${date.getHours()}`.padStart(2, '0');
-    const minutes = `${date.getMinutes()}`.padStart(2, '0');
 
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}`;
   }
 
-  private localDateTimeInputToUtcIso(localValue: string): string {
-    return new Date(localValue).toISOString();
+  private localDateInputToUtcIso(localValue: string, endOfDay = false): string {
+    const date = new Date(`${localValue}T00:00:00`);
+
+    if (endOfDay) {
+      date.setHours(23, 59, 59, 999);
+    }
+
+    return date.toISOString();
   }
 
   useSuggestion(suggestion: AppointmentSuggestion): void {
@@ -109,13 +197,48 @@ export class SchedulePageComponent {
     this.isCreateModalOpen.set(true);
   }
 
+  getAppointmentCardClasses(appointment: AppointmentSummary): Record<string, boolean> {
+    const isPayment = appointment.type === 'Payment';
+    const isDone = appointment.status === 'Done';
+    const isCancelled = appointment.status === 'Cancelled';
+
+    return {
+      'border-slate-200 bg-slate-100/90 opacity-75': isCancelled,
+      'border-emerald-200 bg-emerald-50/90': isDone,
+      'border-amber-200 bg-amber-50/90': isPayment && !isDone && !isCancelled,
+      'border-sky-200 bg-sky-50/90': !isPayment && !isDone && !isCancelled,
+    };
+  }
+
+  getAppointmentMetaText(appointment: AppointmentSummary, dayKey: string): string {
+    if (appointment.type !== 'Payment') {
+      return new Date(appointment.startsAtUtc).toLocaleTimeString(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    }
+
+    if (this.toLocalDateKey(new Date(appointment.endsAtUtc)) === dayKey) {
+      return appointment.status === 'Done' ? 'Paid' : 'Due today';
+    }
+
+    return `Due ${new Date(appointment.endsAtUtc).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })}`;
+  }
+
+  getAppointmentTypeLabel(appointment: AppointmentSummary): string {
+    return appointment.type;
+  }
+
   connectGmail(): void {
     void this.gmailStore.startConnect();
   }
 
   scanGmailSuggestions(): void {
-    const fromUtc = this.localDateTimeInputToUtcIso(this.gmailFromLocalInput());
-    const toUtc = this.localDateTimeInputToUtcIso(this.gmailToLocalInput());
+    const fromUtc = this.localDateInputToUtcIso(this.gmailFromLocalInput());
+    const toUtc = this.localDateInputToUtcIso(this.gmailToLocalInput(), true);
 
     void this.gmailStore.scanSuggestions(fromUtc, toUtc);
   }
@@ -131,11 +254,74 @@ export class SchedulePageComponent {
 
   handleAppointmentSaved(): void {
     this.closeCreateModal();
-    void this.store.load(this.context.householdId());
+    const householdId = this.context.householdId();
+
+    if (householdId) {
+      void this.loadCalendarMonth(householdId, this.currentMonth());
+    }
   }
 
   dismissPageMessage(): void {
     this.pageMessage.set(null);
     this.pageMessageType.set(null);
+  }
+
+  private async loadCalendarMonth(householdId: string, monthStart: Date): Promise<void> {
+    const monthEnd = this.endOfMonth(monthStart);
+
+    this.store.setDateRange(monthStart.toISOString(), monthEnd.toISOString());
+    await this.store.load(householdId);
+  }
+
+  private startOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  private endOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+  }
+
+  private addMonths(date: Date, months: number): Date {
+    return new Date(date.getFullYear(), date.getMonth() + months, 1);
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + days);
+    return nextDate;
+  }
+
+  private startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  private inclusiveEndDay(startDate: Date, endDate: Date): Date {
+    const normalizedEnd = this.startOfDay(endDate);
+    const endsAtStartOfDay =
+      endDate.getHours() === 0 &&
+      endDate.getMinutes() === 0 &&
+      endDate.getSeconds() === 0 &&
+      endDate.getMilliseconds() === 0;
+
+    if (endsAtStartOfDay && normalizedEnd.getTime() > this.startOfDay(startDate).getTime()) {
+      return this.addDays(normalizedEnd, -1);
+    }
+
+    return normalizedEnd;
+  }
+
+  private startOfCalendarGrid(monthStart: Date): Date {
+    const gridStart = new Date(monthStart);
+    const dayOfWeek = (gridStart.getDay() + 6) % 7;
+    gridStart.setDate(gridStart.getDate() - dayOfWeek);
+    return gridStart;
+  }
+
+  private toLocalDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 }

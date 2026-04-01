@@ -5,6 +5,7 @@ using HomeFlow.Modules.Households.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Application.Abstractions;
 using HomeFlow.Modules.Scheduling.Application.Commands.UpdateAppointment;
 using HomeFlow.Modules.Scheduling.Domain.Aggregates;
+using HomeFlow.Modules.Scheduling.Domain.Enums;
 using HomeFlow.Modules.Scheduling.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Domain.Repositories;
 using Moq;
@@ -59,17 +60,23 @@ public sealed class UpdateAppointmentHandlerTests
             new DateTime(2026, 3, 30, 10, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 3, 30, 11, 0, 0, DateTimeKind.Utc),
             "New clinic",
+            "Payment",
+            "Done",
             new[] { memberId.Value });
 
         var result = await handler.Handle(command, CancellationToken.None);
 
         result.Title.Should().Be("Updated dentist");
+        result.Type.Should().Be("Payment");
+        result.Status.Should().Be("Done");
         result.StartsAtUtc.Should().Be(new DateTime(2026, 3, 30, 10, 0, 0, DateTimeKind.Utc));
         result.EndsAtUtc.Should().Be(new DateTime(2026, 3, 30, 11, 0, 0, DateTimeKind.Utc));
 
         appointment.Title.Should().Be("Updated dentist");
         appointment.Description.Should().Be("Bring insurance documents");
         appointment.Location.Should().Be("New clinic");
+        appointment.Type.Should().Be(AppointmentType.Payment);
+        appointment.Status.Should().Be(AppointmentStatus.Done);
         appointment.Participants.Should().HaveCount(1);
 
         unitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -97,6 +104,8 @@ public sealed class UpdateAppointmentHandlerTests
             null,
             new DateTime(2026, 3, 30, 10, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 3, 30, 11, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
             null,
             []);
 
@@ -147,6 +156,8 @@ public sealed class UpdateAppointmentHandlerTests
             null,
             new DateTime(2026, 3, 30, 10, 0, 0, DateTimeKind.Utc),
             new DateTime(2026, 3, 30, 11, 0, 0, DateTimeKind.Utc),
+            null,
+            null,
             null,
             new[] { Guid.NewGuid() });
 

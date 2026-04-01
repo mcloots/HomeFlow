@@ -22,6 +22,7 @@ export interface AppointmentSuggestionInput {
   suggestedStartsAtUtc: string | null;
   suggestedEndsAtUtc: string | null;
   suggestedLocation: string | null;
+  suggestedType: string;
   suggestedDescription: string | null;
 }
 
@@ -36,14 +37,31 @@ export class CreateAppointmentModalComponent {
   private readonly api = inject(AppointmentApiService);
   private readonly context = inject(AppContextStore);
 
-  @Input() isOpen = signal(false);
-  @Input() suggestion = signal<AppointmentSuggestionInput | null>(null);
+  private readonly isOpenState = signal(false);
+  private readonly suggestionState = signal<AppointmentSuggestionInput | null>(null);
+
+  @Input()
+  set isOpen(value: boolean) {
+    this.isOpenState.set(value);
+
+    if (value) {
+      this.applySuggestion();
+    }
+  }
+
+  @Input()
+  set suggestion(value: AppointmentSuggestionInput | null) {
+    this.suggestionState.set(value);
+    this.applySuggestion();
+  }
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   readonly isSaving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly isOpenValue = this.isOpenState.asReadonly();
+  readonly appointmentTypes = ['General', 'Payment'];
 
   readonly contextReady = computed(
     () => this.context.hasTenantId() && this.context.hasHouseholdId()
@@ -55,16 +73,28 @@ export class CreateAppointmentModalComponent {
     startsAtLocal: ['', [Validators.required]],
     endsAtLocal: ['', [Validators.required]],
     location: [''],
+    type: ['General', [Validators.required]],
     participantMemberIds: [''],
   });
 
-  ngOnChanges(): void {
-    this.applySuggestion();
-  }
-
   private applySuggestion(): void {
-    const suggestion = this.suggestion();
+    const suggestion = this.suggestionState();
+
+    if (!this.isOpenValue()) {
+      return;
+    }
+
     if (!suggestion) {
+      this.form.reset({
+        title: '',
+        description: '',
+        startsAtLocal: '',
+        endsAtLocal: '',
+        location: '',
+        type: 'General',
+        participantMemberIds: '',
+      });
+      this.error.set(null);
       return;
     }
 
@@ -74,6 +104,7 @@ export class CreateAppointmentModalComponent {
       startsAtLocal: this.toLocalDateTimeInputValue(suggestion.suggestedStartsAtUtc),
       endsAtLocal: this.toLocalDateTimeInputValue(suggestion.suggestedEndsAtUtc),
       location: suggestion.suggestedLocation ?? '',
+      type: suggestion.suggestedType ?? 'General',
       participantMemberIds: '',
     });
 
@@ -113,6 +144,7 @@ export class CreateAppointmentModalComponent {
       startsAtUtc: new Date(raw.startsAtLocal).toISOString(),
       endsAtUtc: new Date(raw.endsAtLocal).toISOString(),
       location: raw.location.trim() || null,
+      type: raw.type,
       participantMemberIds,
     };
 

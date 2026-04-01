@@ -8,4 +8,5 @@ public sealed record CreateAppointmentCommand(
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
     string? Location,
+    string? Type,
     IReadOnlyCollection<Guid> ParticipantMemberIds);

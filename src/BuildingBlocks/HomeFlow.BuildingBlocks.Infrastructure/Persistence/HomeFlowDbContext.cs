@@ -208,6 +208,10 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
             builder.Property(x => x.Location)
                 .HasMaxLength(300);
 
+            builder.Property(x => x.Type)
+                .HasConversion<int>()
+                .IsRequired();
+
             builder.Property(x => x.Status)
                 .HasConversion<int>()
                 .IsRequired();

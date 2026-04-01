@@ -24,6 +24,7 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
     public DateTime StartsAtUtc { get; private set; }
     public DateTime EndsAtUtc { get; private set; }
     public string? Location { get; private set; }
+    public AppointmentType Type { get; private set; }
     public AppointmentStatus Status { get; private set; }
 
     public IReadOnlyCollection<AppointmentParticipant> Participants => _participants.AsReadOnly();
@@ -36,7 +37,8 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
         string? description,
         DateTime startsAtUtc,
         DateTime endsAtUtc,
-        string? location)
+        string? location,
+        AppointmentType type = AppointmentType.General)
     {
         if (tenantId == default)
             throw new DomainException("TenantId is required.");
@@ -50,6 +52,9 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
         if (endsAtUtc <= startsAtUtc)
             throw new DomainException("End time must be after start time.");
 
+        if (!Enum.IsDefined(type))
+            throw new DomainException("Appointment type is invalid.");
+
         return new Appointment
         {
             Id = id,
@@ -60,6 +65,7 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
             StartsAtUtc = startsAtUtc,
             EndsAtUtc = endsAtUtc,
             Location = string.IsNullOrWhiteSpace(location) ? null : location.Trim(),
+            Type = type,
             Status = AppointmentStatus.Scheduled
         };
     }
@@ -119,6 +125,38 @@ public sealed class Appointment : AggregateRoot<AppointmentId>, ITenantOwned
     {
         EnsureNotCancelled();
         Status = AppointmentStatus.Cancelled;
+    }
+
+    public void SetType(AppointmentType type)
+    {
+        EnsureNotCancelled();
+
+        if (!Enum.IsDefined(type))
+            throw new DomainException("Appointment type is invalid.");
+
+        Type = type;
+    }
+
+    public void SetStatus(AppointmentStatus status)
+    {
+        if (!Enum.IsDefined(status))
+            throw new DomainException("Appointment status is invalid.");
+
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            if (status == AppointmentStatus.Cancelled)
+                return;
+
+            throw new DomainException("Cancelled appointments cannot be modified.");
+        }
+
+        if (status == AppointmentStatus.Cancelled)
+        {
+            Cancel();
+            return;
+        }
+
+        Status = status;
     }
 
     private void EnsureNotCancelled()

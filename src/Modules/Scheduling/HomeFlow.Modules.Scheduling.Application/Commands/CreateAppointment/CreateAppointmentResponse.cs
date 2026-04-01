@@ -7,4 +7,5 @@ public sealed record CreateAppointmentResponse(
     string Title,
     DateTime StartsAtUtc,
     DateTime EndsAtUtc,
-    string Status);
+    string Status,
+    string Type);

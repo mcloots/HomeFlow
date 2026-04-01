@@ -25,6 +25,7 @@ public sealed class AppointmentTests
             "Clinic");
 
         appointment.Title.Should().Be("Dentist");
+        appointment.Type.Should().Be(AppointmentType.General);
         appointment.Status.Should().Be(AppointmentStatus.Scheduled);
         appointment.Participants.Should().BeEmpty();
     }
@@ -105,5 +106,24 @@ public sealed class AppointmentTests
         appointment.Cancel();
 
         appointment.Status.Should().Be(AppointmentStatus.Cancelled);
+    }
+
+    [Fact]
+    public void SetStatus_Should_Set_Status_To_Done()
+    {
+        var appointment = Appointment.Create(
+            AppointmentId.New(),
+            TenantId.New(),
+            HouseholdId.New(),
+            "Pay invoice",
+            null,
+            new DateTime(2026, 3, 30, 8, 0, 0, DateTimeKind.Utc),
+            new DateTime(2026, 3, 30, 9, 0, 0, DateTimeKind.Utc),
+            null,
+            AppointmentType.Payment);
+
+        appointment.SetStatus(AppointmentStatus.Done);
+
+        appointment.Status.Should().Be(AppointmentStatus.Done);
     }
 }

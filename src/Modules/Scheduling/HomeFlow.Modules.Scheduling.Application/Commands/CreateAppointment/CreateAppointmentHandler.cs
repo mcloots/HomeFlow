@@ -3,6 +3,7 @@ using HomeFlow.BuildingBlocks.MultiTenancy.Models;
 using HomeFlow.Modules.Households.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Application.Abstractions;
 using HomeFlow.Modules.Scheduling.Domain.Aggregates;
+using HomeFlow.Modules.Scheduling.Domain.Enums;
 using HomeFlow.Modules.Scheduling.Domain.Ids;
 using HomeFlow.Modules.Scheduling.Domain.Repositories;
 
@@ -44,6 +45,7 @@ public sealed class CreateAppointmentHandler
         if (!allParticipantsBelongToHousehold)
             throw new InvalidOperationException("One or more participants do not belong to the household.");
 
+        var appointmentType = ParseAppointmentType(command.Type);
         var appointmentId = AppointmentId.New();
 
         var appointment = Appointment.Create(
@@ -54,7 +56,8 @@ public sealed class CreateAppointmentHandler
             command.Description,
             command.StartsAtUtc,
             command.EndsAtUtc,
-            command.Location);
+            command.Location,
+            appointmentType);
 
         foreach (var participantId in participantIds)
         {
@@ -71,6 +74,21 @@ public sealed class CreateAppointmentHandler
             appointment.Title,
             appointment.StartsAtUtc,
             appointment.EndsAtUtc,
-            appointment.Status.ToString());
+            appointment.Status.ToString(),
+            appointment.Type.ToString());
+    }
+
+    private static AppointmentType ParseAppointmentType(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return AppointmentType.General;
+
+        if (Enum.TryParse<AppointmentType>(value, true, out var appointmentType) &&
+            Enum.IsDefined(appointmentType))
+        {
+            return appointmentType;
+        }
+
+        throw new InvalidOperationException("Appointment type is invalid.");
     }
 }
