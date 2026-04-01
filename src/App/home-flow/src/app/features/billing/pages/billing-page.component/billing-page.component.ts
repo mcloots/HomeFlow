@@ -47,6 +47,58 @@ export class BillingPageComponent {
       surface: 'bg-emerald-50 border-emerald-200',
     },
   ]);
+  readonly monthlyPaidInsights = computed(() => {
+    const formatter = new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      year: 'numeric',
+    });
+
+    const months = this.buildRecentMonths(6);
+    const paidBills = this.store.paidBills();
+
+    const groups = new Map<string, { amount: number; count: number }>();
+
+    for (const month of months) {
+      groups.set(month.key, { amount: 0, count: 0 });
+    }
+
+    for (const bill of paidBills) {
+      const sourceDate = bill.paidAtUtc ?? bill.dueDateUtc;
+      const date = new Date(sourceDate);
+      const monthKey = `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}`;
+      const current = groups.get(monthKey);
+
+      if (!current) {
+        continue;
+      }
+
+      current.amount += bill.amount;
+      current.count += 1;
+    }
+
+    const items = months.map((month) => {
+      const current = groups.get(month.key) ?? { amount: 0, count: 0 };
+
+      return {
+        key: month.key,
+        label: formatter.format(month.date),
+        shortLabel: month.date.toLocaleDateString(undefined, { month: 'short' }),
+        amount: current.amount,
+        count: current.count,
+      };
+    });
+
+    const maxAmount = Math.max(...items.map((item) => item.amount), 0);
+
+    return items.map((item) => ({
+      ...item,
+      amountHeight: maxAmount > 0 ? Math.max((item.amount / maxAmount) * 100, item.amount > 0 ? 12 : 0) : 0,
+    }));
+  });
+  readonly paidInsightsSummary = computed(() => ({
+    totalAmount: this.store.paidBills().reduce((sum, bill) => sum + bill.amount, 0),
+    totalCount: this.store.paidBills().length,
+  }));
 
   constructor() {
     effect(() => {
@@ -143,5 +195,20 @@ export class BillingPageComponent {
         this.actionError.set('Failed to update bill status.');
       },
     });
+  }
+
+  private buildRecentMonths(monthCount: number): Array<{ key: string; date: Date }> {
+    const now = new Date();
+    const months: Array<{ key: string; date: Date }> = [];
+
+    for (let index = monthCount - 1; index >= 0; index -= 1) {
+      const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+      months.push({
+        key: `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}`,
+        date,
+      });
+    }
+
+    return months;
   }
 }
