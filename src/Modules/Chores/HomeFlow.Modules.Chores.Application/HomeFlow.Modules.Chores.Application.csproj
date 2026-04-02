@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\HomeFlow.BuildingBlocks.Application\HomeFlow.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\HomeFlow.Modules.Chores.Domain\HomeFlow.Modules.Chores.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

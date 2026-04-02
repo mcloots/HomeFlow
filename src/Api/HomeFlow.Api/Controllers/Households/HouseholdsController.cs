@@ -55,5 +55,10 @@ public sealed class HouseholdsController : ControllerBase
         {
             return NotFound(new { error = ex.Message });
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Browser/navigation aborts are expected during rapid UI updates.
+            return new EmptyResult();
+        }
     }
 }

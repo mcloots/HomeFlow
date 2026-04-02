@@ -33,6 +33,9 @@
     <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Application\HomeFlow.Modules.Billing.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Contracts\HomeFlow.Modules.Billing.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Billing\HomeFlow.Modules.Billing.Infrastructure\HomeFlow.Modules.Billing.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Chores\HomeFlow.Modules.Chores.Application\HomeFlow.Modules.Chores.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Chores\HomeFlow.Modules.Chores.Contracts\HomeFlow.Modules.Chores.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Chores\HomeFlow.Modules.Chores.Infrastructure\HomeFlow.Modules.Chores.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Application\HomeFlow.Modules.Scheduling.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Contracts\HomeFlow.Modules.Scheduling.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Scheduling\HomeFlow.Modules.Scheduling.Infrastructure\HomeFlow.Modules.Scheduling.Infrastructure.csproj" />

@@ -3,6 +3,7 @@ using System;
 using HomeFlow.BuildingBlocks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HomeFlow.BuildingBlocks.Infrastructure.Migrations
 {
     [DbContext(typeof(HomeFlowDbContext))]
-    partial class HomeFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402130249_chores")]
+    partial class chores
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,12 +91,6 @@ namespace HomeFlow.BuildingBlocks.Infrastructure.Migrations
 
                     b.Property<int>("Recurrence")
                         .HasColumnType("integer");
-
-                    b.Property<int?>("RecurrenceMonths")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("RecursUntilUtc")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

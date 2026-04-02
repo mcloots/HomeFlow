@@ -16,6 +16,12 @@
     <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Domain/HomeFlow.Modules.Billing.Domain.csproj" />
     <Project Path="src/Modules/Billing/HomeFlow.Modules.Billing.Infrastructure/HomeFlow.Modules.Billing.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Chores/">
+    <Project Path="src/Modules/Chores/HomeFlow.Modules.Chores.Application/HomeFlow.Modules.Chores.Application.csproj" />
+    <Project Path="src/Modules/Chores/HomeFlow.Modules.Chores.Contracts/HomeFlow.Modules.Chores.Contracts.csproj" />
+    <Project Path="src/Modules/Chores/HomeFlow.Modules.Chores.Domain/HomeFlow.Modules.Chores.Domain.csproj" />
+    <Project Path="src/Modules/Chores/HomeFlow.Modules.Chores.Infrastructure/HomeFlow.Modules.Chores.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Households/">
     <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Application/HomeFlow.Modules.Households.Application.csproj" />
     <Project Path="src/Modules/Households/HomeFlow.Modules.Households.Contracts/HomeFlow.Modules.Households.Contracts.csproj" />

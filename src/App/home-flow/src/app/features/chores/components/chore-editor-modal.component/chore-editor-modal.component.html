@@ -1,0 +1,134 @@
+@if (isOpenValue()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
+    <div class="w-full max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">Chores</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+            {{ currentChore() ? 'Edit chore' : 'Add chore' }}
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Assign ownership, pick a due date, and decide whether the chore should repeat automatically.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="rounded-full border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          (click)="close()"
+        >
+          Close
+        </button>
+      </div>
+
+      <form class="mt-6 space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Title</span>
+          <input
+            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+            formControlName="title"
+            placeholder="Afwas, vuilnis, gras maaien..."
+          />
+        </label>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Description</span>
+          <textarea
+            class="min-h-28 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+            formControlName="description"
+            placeholder="Optional details, pickup location, special instructions, etc."
+          ></textarea>
+        </label>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Due date</span>
+            <input
+              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+              type="date"
+              formControlName="dueDateLocal"
+            />
+          </label>
+
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Assigned member</span>
+            <select
+              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+              formControlName="assignedMemberId"
+            >
+              <option value="">Unassigned</option>
+              @for (member of availableMembers(); track member.memberId) {
+                <option [value]="member.memberId">{{ member.displayName }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="mb-1 block text-sm font-medium text-slate-700">Recurring cadence</span>
+          <select
+            class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+            formControlName="recurrence"
+          >
+            <option value="None">One-off</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+          </select>
+        </label>
+
+        @if (form.controls.recurrence.value !== 'None') {
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Repeat for how many months</span>
+            <input
+              class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm"
+              type="number"
+              min="1"
+              formControlName="recurrenceMonths"
+            />
+          </label>
+        }
+
+        @if (membersError()) {
+          <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ membersError() }}
+          </div>
+        }
+
+        @if (error()) {
+          <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ error() }}
+          </div>
+        }
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+          <div class="text-sm text-slate-500">
+            @if (isLoadingMembers()) {
+              Loading household members...
+            } @else {
+              Completion audit will capture who finished the chore when it is marked done.
+            }
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="button"
+              class="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              (click)="close()"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="rounded-2xl bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+              [disabled]="isSaving()"
+            >
+              {{ currentChore() ? 'Save changes' : 'Create chore' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+}

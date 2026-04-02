@@ -3,6 +3,7 @@ using HomeFlow.Modules.Households.Application.Abstractions;
 using HomeFlow.Modules.Households.Application.Queries.GetHouseholdDetails;
 using HomeFlow.Modules.Households.Application.Queries.GetHouseholdMembers;
 using HomeFlow.Modules.Households.Domain.Aggregates;
+using HomeFlow.Modules.Households.Domain.Ids;
 using Microsoft.EntityFrameworkCore;
 
 namespace HomeFlow.Modules.Households.Infrastructure.Repositories;
@@ -60,24 +61,28 @@ public sealed class HouseholdReadRepository : IHouseholdReadRepository
         Guid householdId,
         CancellationToken cancellationToken = default)
     {
-        var householdTypedId = new HomeFlow.Modules.Households.Domain.Ids.HouseholdId(householdId);
+        var householdTypedId = new HouseholdId(householdId);
 
-        var household = await _dbContext.Households
-            .Include(x => x.Members)
-            .SingleOrDefaultAsync(x => x.Id == householdTypedId, cancellationToken);
+        var householdExists = await _dbContext.Households
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == householdTypedId, cancellationToken);
 
-        if (household is null)
+        if (!householdExists)
             return null;
 
+        var members = await _dbContext.Set<HouseholdMember>()
+            .AsNoTracking()
+            .Where(x => EF.Property<HouseholdId>(x, "HouseholdId") == householdTypedId)
+            .OrderBy(x => x.DisplayName)
+            .Select(x => new HouseholdMemberListItemDto(
+                x.Id.Value,
+                x.DisplayName,
+                x.Email,
+                x.Role.ToString()))
+            .ToListAsync(cancellationToken);
+
         return new GetHouseholdMembersResponse(
-            household.Id.Value,
-            household.Members
-                .OrderBy(m => m.DisplayName)
-                .Select(m => new HouseholdMemberListItemDto(
-                    m.Id.Value,
-                    m.DisplayName,
-                    m.Email,
-                    m.Role.ToString()))
-                .ToList());
+            householdId,
+            members);
     }
 }

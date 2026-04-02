@@ -10,6 +10,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 export class App {
   readonly navItems = [
     { label: 'Schedule', path: '/schedule' },
+    { label: 'Chores', path: '/chores' },
     { label: 'Bills', path: '/billing' },
   ];
 }

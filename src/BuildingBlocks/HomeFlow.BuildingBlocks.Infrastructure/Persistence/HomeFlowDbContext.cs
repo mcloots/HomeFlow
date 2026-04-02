@@ -2,6 +2,8 @@
 using HomeFlow.BuildingBlocks.MultiTenancy.Models;
 using HomeFlow.Modules.Billing.Domain.Aggregates;
 using HomeFlow.Modules.Billing.Domain.Ids;
+using HomeFlow.Modules.Chores.Domain.Aggregates;
+using HomeFlow.Modules.Chores.Domain.Ids;
 using HomeFlow.Modules.Households.Domain.Aggregates;
 using HomeFlow.Modules.Households.Domain.Ids;
 using HomeFlow.Modules.Integrations.Gmail.Domain.Aggregates;
@@ -26,6 +28,7 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Bill> Bills => Set<Bill>();
+    public DbSet<Chore> Chores => Set<Chore>();
     public DbSet<GmailConnection> GmailConnections => Set<GmailConnection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +38,7 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
         ConfigureHouseholdInvitations(modelBuilder);
         ConfigureScheduling(modelBuilder);
         ConfigureBilling(modelBuilder);
+        ConfigureChores(modelBuilder);
         ConfigureGmail(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
@@ -303,6 +307,70 @@ public sealed class HomeFlowDbContext : DbContext, IUnitOfWork
             builder.Property(x => x.PaidAtUtc);
 
             builder.HasIndex(x => new { x.HouseholdId, x.DueDateUtc });
+        });
+    }
+
+    private static void ConfigureChores(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Chore>(builder =>
+        {
+            builder.ToTable("chores");
+
+            builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                .HasConversion(
+                    id => id.Value,
+                    value => new ChoreId(value));
+
+            builder.Property(x => x.TenantId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new TenantId(value))
+                .IsRequired();
+
+            builder.Property(x => x.HouseholdId)
+                .HasConversion(
+                    id => id.Value,
+                    value => new HouseholdId(value))
+                .IsRequired();
+
+            builder.Property(x => x.Title)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(x => x.Description)
+                .HasMaxLength(2000);
+
+            builder.Property(x => x.DueDateUtc)
+                .IsRequired();
+
+            builder.Property(x => x.AssignedMemberId)
+                .HasConversion(
+                    id => id.HasValue ? id.Value.Value : (Guid?)null,
+                    value => value.HasValue ? new HouseholdMemberId(value.Value) : (HouseholdMemberId?)null);
+
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(x => x.Recurrence)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(x => x.RecurrenceMonths);
+
+            builder.Property(x => x.RecursUntilUtc);
+
+            builder.Property(x => x.CompletedAtUtc);
+
+            builder.Property(x => x.CompletedByMemberId)
+                .HasConversion(
+                    id => id.HasValue ? id.Value.Value : (Guid?)null,
+                    value => value.HasValue ? new HouseholdMemberId(value.Value) : (HouseholdMemberId?)null);
+
+            builder.HasIndex(x => new { x.HouseholdId, x.DueDateUtc });
+            builder.HasIndex(x => new { x.HouseholdId, x.Status });
         });
     }
 

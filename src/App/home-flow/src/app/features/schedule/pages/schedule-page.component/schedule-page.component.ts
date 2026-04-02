@@ -11,10 +11,13 @@ import { AppointmentSummary } from '../../models/schedule.models';
 import { BillEditorModalComponent } from '../../../billing/components/bill-editor-modal.component/bill-editor-modal.component';
 import { BillingStore } from '../../../billing/data-access/billing.store';
 import { BillSummary } from '../../../billing/models/bill.models';
+import { ChoresStore } from '../../../chores/data-access/chores.store';
+import { ChoreSummary } from '../../../chores/models/chore.models';
+import { ChoreEditorModalComponent } from '../../../chores/components/chore-editor-modal.component/chore-editor-modal.component';
 
 @Component({
   selector: 'app-schedule-page.component',
-  imports: [CommonModule, FormsModule, DatePipe, RouterLink, CreateAppointmentModalComponent, BillEditorModalComponent],
+  imports: [CommonModule, FormsModule, DatePipe, RouterLink, CreateAppointmentModalComponent, BillEditorModalComponent, ChoreEditorModalComponent],
   templateUrl: './schedule-page.component.html',
   styleUrl: './schedule-page.component.css',
 })
@@ -24,6 +27,7 @@ export class SchedulePageComponent {
   readonly context = inject(AppContextStore);
   readonly store = inject(ScheduleStore);
   readonly billingStore = inject(BillingStore);
+  readonly choresStore = inject(ChoresStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -89,6 +93,18 @@ export class SchedulePageComponent {
       itemsByDay.set(dayKey, current);
     }
 
+    for (const chore of this.choresStore.pendingChores()) {
+      const dayKey = this.toLocalDateKey(new Date(chore.dueDateUtc));
+      const current = itemsByDay.get(dayKey) ?? [];
+      current.push({
+        key: `chore-${chore.choreId}`,
+        kind: 'chore',
+        sortUtc: chore.dueDateUtc,
+        chore,
+      });
+      itemsByDay.set(dayKey, current);
+    }
+
     for (const [dayKey, items] of itemsByDay.entries()) {
       itemsByDay.set(
         dayKey,
@@ -129,8 +145,10 @@ export class SchedulePageComponent {
 
   readonly isCreateModalOpen = signal(false);
   readonly isBillModalOpen = signal(false);
+  readonly isChoreModalOpen = signal(false);
   readonly selectedSuggestion = signal<AppointmentSuggestion | null>(null);
   readonly selectedBill = signal<BillSummary | null>(null);
+  readonly selectedChore = signal<ChoreSummary | null>(null);
 
   readonly pageMessage = signal<string | null>(null);
   readonly pageMessageType = signal<'success' | 'error' | null>(null);
@@ -148,6 +166,7 @@ export class SchedulePageComponent {
       if (householdId) {
         void this.loadCalendarMonth(householdId, monthStart);
         void this.billingStore.load(householdId);
+        void this.choresStore.load(householdId);
       }
     });
 
@@ -286,6 +305,20 @@ export class SchedulePageComponent {
     this.selectedBill.set(null);
   }
 
+  closeChoreModal(): void {
+    this.isChoreModalOpen.set(false);
+    this.selectedChore.set(null);
+  }
+
+  async handleChoreSaved(): Promise<void> {
+    this.closeChoreModal();
+    const householdId = this.context.householdId();
+
+    if (householdId) {
+      await this.choresStore.load(householdId);
+    }
+  }
+
   async handleBillSaved(): Promise<void> {
     this.closeBillModal();
     const householdId = this.context.householdId();
@@ -300,6 +333,13 @@ export class SchedulePageComponent {
     this.selectedBill.set(bill);
     this.isCreateModalOpen.set(false);
     this.isBillModalOpen.set(true);
+  }
+
+  editChoreFromCalendar(chore: ChoreSummary): void {
+    this.selectedChore.set(chore);
+    this.isBillModalOpen.set(false);
+    this.isCreateModalOpen.set(false);
+    this.isChoreModalOpen.set(true);
   }
 
   getBillCardClasses(bill: BillSummary): Record<string, boolean> {
@@ -321,8 +361,26 @@ export class SchedulePageComponent {
     })}`;
   }
 
+  getChoreCardClasses(chore: ChoreSummary): Record<string, boolean> {
+    return {
+      'border-rose-200 bg-rose-50/90': chore.isOverdue,
+      'border-amber-200 bg-amber-50/90': !chore.isOverdue,
+    };
+  }
+
+  getChoreMetaText(chore: ChoreSummary, dayKey: string): string {
+    if (dayKey === this.toLocalDateKey(new Date(chore.dueDateUtc))) {
+      return chore.isOverdue ? 'Overdue' : 'Due today';
+    }
+
+    return `Due ${new Date(chore.dueDateUtc).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    })}`;
+  }
+
   readonly totalCalendarItems = computed(
-    () => this.store.appointments().length + this.billingStore.bills().length
+    () => this.store.appointments().length + this.billingStore.bills().length + this.choresStore.pendingChores().length
   );
 
   dismissPageMessage(): void {
@@ -402,4 +460,10 @@ type CalendarItem =
       kind: 'bill';
       sortUtc: string;
       bill: BillSummary;
+    }
+  | {
+      key: string;
+      kind: 'chore';
+      sortUtc: string;
+      chore: ChoreSummary;
     };
